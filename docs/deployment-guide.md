@@ -137,6 +137,8 @@ oAAAA1111BBBB2222,oCCCC3333DDDD4444
 
 **判断标准**：`login` 云函数的配置里能看到 `ADMIN_OPENIDS`。
 
+> **顺序提示**：第 4 步和第 5 步**可以先做第 5 步**。`init` 允许在没有任何管理员配置时先建好集合与索引，之后再配 `ADMIN_OPENIDS` 并重跑一次 `init` 来写入管理员。两条路都通，看你方便。
+
 ---
 
 ## 5. 初始化数据库（建集合 + 建索引 + 写管理员）
@@ -147,13 +149,26 @@ oAAAA1111BBBB2222,oCCCC3333DDDD4444
 { "action": "setup" }
 ```
 
-看返回结果，重点看三个字段：
+> **这一步不需要身份，也不要求先配好管理员。**
+>
+> `init` 的鉴权策略（解决"配置管理员之前无法初始化"的鸡生蛋问题）：
+>
+> 1. 配置了 `ADMIN_OPENIDS` → **必须**通过管理员校验
+> 2. 配置了 `INIT_TOKEN` → 可用 `{"action":"setup","setupToken":"你的令牌"}` 初始化
+> 3. 两者都没配 → **放行首次初始化**
+>
+> 第 3 条存在的原因是：初始化本身就要写管理员，如果强制要求管理员身份就会死锁。此时只会创建空集合与索引，不含任何业务数据，风险可控。**配置好 `ADMIN_OPENIDS` 后本函数会自动收紧，无需改代码。**
+
+看返回结果，重点看四个字段：
 
 | 字段 | 含义 | 你要做什么 |
 |---|---|---|
 | `collections` | 5 个集合的创建情况 | 每个都应该 `created: true` 或 `existed: true` |
 | `indexes` | 7 个索引的创建情况 | 有 `needManual: true` 的必须手工补建 |
-| `admins` | 管理员写入情况 | `inserted: 1` 表示你的 openid 已写入白名单 |
+| `admins` | 管理员写入情况 | `inserted: 1` 表示你的 openid 已写入白名单；若显示 `skipped` 说明还没配 `ADMIN_OPENIDS` |
+| `authorizedBy` | 本次以什么身份执行 | `admin`=管理员校验通过；`setupToken`=令牌；`bootstrap`=无配置放行（应先配好管理员再重跑一次） |
+
+> **如果 `admins` 显示 `skipped: '环境变量 ADMIN_OPENIDS 为空'`**：说明第 4 步还没做。先配好 `ADMIN_OPENIDS`（给 `login` 和 `init` 都配），再执行一次 `{"action":"setup"}`，管理员才会被写入。
 
 ### ⚠️ 索引必须核实（这是最关键的一步）
 

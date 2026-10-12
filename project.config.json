@@ -2,8 +2,14 @@
   "description": "微信小程序定位签到系统 - 项目配置。请将 appid 替换为你自己的小程序 AppID。",
   "packOptions": {
     "ignore": [
-      { "type": "folder", "value": "docs" },
-      { "type": "folder", "value": "prototypes" }
+      {
+        "value": "docs",
+        "type": "folder"
+      },
+      {
+        "value": "prototypes",
+        "type": "folder"
+      }
     ],
     "include": []
   },
@@ -43,20 +49,35 @@
     "minifyWXML": true,
     "showES6CompileOption": false,
     "useCompilerPlugins": false,
-    "ignoreUploadUnusedFiles": true
+    "ignoreUploadUnusedFiles": true,
+    "compileWorklet": false,
+    "localPlugins": false,
+    "condition": false
   },
   "compileType": "miniprogram",
   "libVersion": "3.5.0",
-  "appid": "touristappid",
+  "appid": "wxd23fe50a7391a3e8",
   "projectname": "attendance-miniprogram",
   "cloudfunctionRoot": "cloudfunctions/",
   "miniprogramRoot": "miniprogram/",
   "condition": {
     "miniprogram": {
       "list": [
-        { "name": "首页·身份选择", "pathName": "pages/index/index", "query": "", "scene": null },
-        { "name": "学生登录", "pathName": "pages/student/login/login", "query": "", "scene": null }
+        {
+          "name": "首页·身份选择",
+          "pathName": "pages/index/index",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "学生登录",
+          "pathName": "pages/student/login/login",
+          "query": "",
+          "scene": null
+        }
       ]
     }
-  }
+  },
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
 }

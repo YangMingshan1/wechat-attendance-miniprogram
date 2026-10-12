@@ -9,14 +9,18 @@
  * 调用：微信开发者工具 → 云函数 init → 云端测试，事件
  *   { "action": "setup" }
  *
- * 注意：本函数只应由部署者在初始化阶段调用。为避免被滥用，除首次初始化外，
- * 后续调用要求调用者已是管理员（见 handler 中的判断）。
+ * 鉴权策略（解决"配置管理员之前无法初始化"的鸡生蛋问题）：
+ *   1. 配置了 ADMIN_OPENIDS  → 必须通过管理员校验
+ *   2. 配置了 INIT_TOKEN     → 可用 { "action":"setup", "setupToken":"..." } 初始化
+ *   3. 两者都没配            → 放行首次初始化（此时只建空集合与索引，无业务数据）
+ * 配置 ADMIN_OPENIDS 后本函数会自动收紧，无需改代码。
  */
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const { withHandler, ok, CODE, BizError } = require('./common/response');
 const { requireAdmin, envAdminOpenids, getOpenid } = require('./common/auth');
+const { str } = require('./common/utils');
 
 const db = cloud.database();
 
@@ -155,14 +159,37 @@ exports.main = withHandler(async (event) => {
     throw new BizError(CODE.PARAM_ERROR, '不支持的操作：' + action);
   }
 
-  // ---- 首次初始化放行，之后要求管理员身份 ----
+  // ---- 鉴权 ----
+  //
+  // 这里必须允许"无身份首次初始化"，否则会出现鸡生蛋死锁：
+  //   初始化要写管理员 → 需要 ADMIN_OPENIDS 环境变量
+  //   但环境变量还没配 → 判定为非首次初始化 → 要求管理员身份
+  //   调用者没有身份（例如从云开发控制台"云端测试"触发）→ 403，永远初始化不了
+  //
+  // 因此采用"宽松初始化 + 事后自动收紧"的策略：
+  //   1) 一旦配置了 ADMIN_OPENIDS，后续调用必须通过管理员校验（自动收紧）
+  //   2) 若配置了 INIT_TOKEN，则可用令牌替代身份做首次初始化（可选）
+  //   3) 两者都没配时放行——此时只创建空集合与索引，不含任何业务数据，风险可控
   const allowList = envAdminOpenids();
   const callerOpenid = getOpenid();
-  const isFirstInit = allowList.length > 0 && allowList.indexOf(callerOpenid) !== -1;
+  const initToken = str(process.env.INIT_TOKEN);
+  const providedToken = str(event.setupToken);
 
-  if (!isFirstInit) {
-    // 不是环境变量白名单里的账号，则要求已是管理员
+  let authorizedBy = '';
+  if (initToken && providedToken === initToken) {
+    // 方式一：初始化令牌（适合无身份的云端测试场景）
+    authorizedBy = 'setupToken';
+  } else if (allowList.length > 0) {
+    // 方式二：环境变量已配置，必须严格校验管理员身份（此时已无死锁问题）
     await requireAdmin();
+    authorizedBy = 'admin';
+  } else if (initToken) {
+    // 配了令牌但没传对
+    throw new BizError(CODE.PARAM_ERROR, '初始化令牌不正确，请在调用参数中传入 setupToken');
+  } else {
+    // 方式三：无任何配置时放行首次初始化
+    authorizedBy = 'bootstrap';
+    console.warn('[init] 以 bootstrap 模式执行：尚未配置 ADMIN_OPENIDS 或 INIT_TOKEN');
   }
 
   // 1) 建集合
@@ -197,15 +224,32 @@ exports.main = withHandler(async (event) => {
   }
 
   const manual = indexes.filter((i) => i.needManual);
+
+  // 组装后续操作指引
+  const nextSteps = [];
+  if (allowList.length === 0) {
+    nextSteps.push(
+      '尚未配置 ADMIN_OPENIDS 环境变量，因此没有写入任何管理员。请把 openid 配到 login 与 init 云函数的环境变量后，重新执行一次以写入管理员。'
+    );
+  }
+  if (authorizedBy === 'bootstrap') {
+    nextSteps.push(
+      '本次以 bootstrap 模式执行（无身份校验）。配置 ADMIN_OPENIDS 或 INIT_TOKEN 后，本函数会自动收紧，无需修改代码。'
+    );
+  }
+  nextSteps.push('请在云开发控制台 → 数据库 → 索引管理 中确认 records 的唯一索引 uk_course_device 已生效。');
+
   return ok(
     {
+      authorizedBy,
       collections,
       indexes,
       admins: adminResult,
       needManualIndexes: manual.length,
       tip: manual.length
         ? '有 ' + manual.length + ' 个索引未能通过 SDK 创建，请在云开发控制台 → 数据库 → 索引管理 中按 needManualIndexes 的 keys 手工创建。'
-        : '全部索引创建完成。'
+        : '全部索引创建完成。',
+      nextSteps
     },
     manual.length ? '初始化完成（部分索引需手工创建）' : '初始化完成'
   );
