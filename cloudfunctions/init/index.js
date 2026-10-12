@@ -180,7 +180,20 @@ exports.main = withHandler(async (event) => {
     // 方式一：初始化令牌（适合无身份的云端测试场景）
     authorizedBy = 'setupToken';
   } else if (allowList.length > 0) {
-    // 方式二：环境变量已配置，必须严格校验管理员身份（此时已无死锁问题）
+    // 方式二：环境变量已配置，必须严格校验管理员身份
+    //
+    // 注意：云端测试/控制台触发时拿不到调用者 openid，此时若 ADMIN_OPENIDS 的值
+    // 填错了（或填的不是本人），这里必然失败且报错难懂。因此先单独判断 openid 是否为空，
+    // 给出可操作的排查指引。
+    if (!callerOpenid) {
+      throw new BizError(
+        CODE.NOT_LOGIN,
+        '当前调用没有微信身份（云端测试/控制台触发时属于正常现象）。' +
+          '由于已配置 ADMIN_OPENIDS，本函数要求管理员身份，因此无法执行。' +
+          '解决办法：① 临时清空 init 的 ADMIN_OPENIDS 后重跑；或 ② 配置 INIT_TOKEN 并传入 setupToken；' +
+          '或 ③ 在小程序里以管理员身份进入后再执行初始化。'
+      );
+    }
     await requireAdmin();
     authorizedBy = 'admin';
   } else if (initToken) {
