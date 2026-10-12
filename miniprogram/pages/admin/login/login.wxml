@@ -32,6 +32,6 @@
     仅名单内的管理员可登录。若提示"非管理员账号"，请联系系统部署者把你的微信账号加入白名单。
   </view>
 
-  <view class="dev-entry" bindtap="onShowOpenid">部署者：查看本机 openid</view>
+  <view class="dev-entry" bindtap="onShowOpenid">部署者入口：认领管理员 / 查看 openid</view>
 
 </view>

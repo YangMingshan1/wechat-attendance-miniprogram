@@ -106,6 +106,10 @@ const api = {
   whoami() {
     return call('login', 'whoami');
   },
+  /** 认领管理员：仅首次部署、admins 集合为空时可用 */
+  claimAdmin(nickName, avatarUrl) {
+    return call('login', 'claimAdmin', { nickName, avatarUrl }, { loading: '正在认领' });
+  },
 
   // ---------- 课程 ----------
   courseList(onlyEnabled) {

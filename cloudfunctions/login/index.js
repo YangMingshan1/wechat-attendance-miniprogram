@@ -4,12 +4,20 @@
  * action:
  *   adminLogin   管理员微信授权登录（校验 openid 白名单）
  *   studentLogin 学生登录（学号 + 姓名匹配后台名单）
+ *   whoami       查看当前调用者 openid（部署用）
+ *   claimAdmin   认领管理员（仅首次部署、admins 为空时可用）
  */
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const { withHandler, ok, CODE, BizError, assert } = require('./common/response');
-const { requireAdmin, requireStudent, getOpenid } = require('./common/auth');
+const {
+  requireAdmin,
+  requireStudent,
+  getOpenid,
+  envAdminOpenids,
+  ADMINS
+} = require('./common/auth');
 const { str } = require('./common/utils');
 
 const db = cloud.database();
@@ -108,6 +116,60 @@ async function studentLogin(event) {
   );
 }
 
+/**
+ * 认领管理员（首次部署引导）
+ *
+ * 目的：解决"第一个管理员怎么产生"的问题，让部署者不用手工往数据库里插记录。
+ *
+ * 安全限制（三条同时满足才允许）：
+ *   1. 调用者必须携带微信身份（即从真实小程序客户端发起，云端测试不行）
+ *   2. admins 集合必须为空
+ *   3. 未配置 ADMIN_OPENIDS 环境变量
+ *
+ * 满足时把当前调用者写入 admins 集合并返回其 openid。
+ * 一旦 admins 非空、或配置了 ADMIN_OPENIDS，本动作即自动失效，无法被滥用。
+ */
+async function claimAdmin() {
+  const openid = getOpenid();
+  if (!openid) {
+    throw new BizError(
+      CODE.NOT_LOGIN,
+      '无法获取微信身份。请在小程序内（不是云端测试）调用本动作。'
+    );
+  }
+
+  // 安全闸门 1：环境变量已配置时禁止认领
+  if (envAdminOpenids().length > 0) {
+    throw new BizError(
+      CODE.NOT_ADMIN,
+      '已配置 ADMIN_OPENIDS 环境变量，请改用它管理管理员，认领入口已关闭。'
+    );
+  }
+
+  // 安全闸门 2：已存在管理员时禁止认领
+  const count = await db.collection(ADMINS).count();
+  if (count.total > 0) {
+    throw new BizError(
+      CODE.NOT_ADMIN,
+      '已存在 ' + count.total + ' 位管理员，认领入口已关闭。如需新增管理员，请直接在 admins 集合中添加记录。'
+    );
+  }
+
+  const doc = {
+    openid,
+    nickName: str(event.nickName) || '管理员',
+    avatarUrl: str(event.avatarUrl),
+    createTime: new Date()
+  };
+  const added = await db.collection(ADMINS).add({ data: doc });
+  doc._id = added._id;
+
+  return ok(
+    { openid, admin: doc },
+    '已认领管理员身份。请妥善保存下面的 openid，之后新增管理员需在 admins 集合中手动添加。'
+  );
+}
+
 exports.main = withHandler(async (event) => {
   const action = event.action;
 
@@ -119,6 +181,8 @@ exports.main = withHandler(async (event) => {
     case 'whoami':
       // 仅供部署者查看自己的 openid，用于配置环境变量 ADMIN_OPENIDS
       return ok({ openid: getOpenid() });
+    case 'claimAdmin':
+      return claimAdmin();
     default:
       throw new BizError(CODE.PARAM_ERROR, '不支持的操作：' + (action || '(空)'));
   }

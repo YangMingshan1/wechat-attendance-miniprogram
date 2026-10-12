@@ -82,13 +82,50 @@ Page({
     });
   },
 
-  /** 查看本机 openid，便于部署者配置白名单 */
+  /** 开发者入口：查看 openid / 认领管理员（首次部署引导） */
   async onShowOpenid() {
+    let openid = '';
     try {
       const data = await api.whoami();
-      await confirm(`你的 openid：\n\n${data.openid}\n\n请将其填入云函数环境变量 ADMIN_OPENIDS（多个用英文逗号分隔）。`, '开发者信息');
+      openid = data.openid || '';
     } catch (err) {
       showError(err);
+      return;
+    }
+
+    if (!openid) {
+      await confirm(
+        '当前调用没有获取到微信身份。\n\n请确认你是从「编译运行」的小程序里点击本入口，而不是在开发者工具的云函数测试里执行。',
+        '未获取到身份'
+      );
+      return;
+    }
+
+    const yes = await confirm(
+      `你的 openid：\n${openid}\n\n` +
+        '如果这是你第一次部署、且 admins 集合里还没有管理员，可以点「认领管理员」把自己加进去，' +
+        '省去手工往数据库插记录。\n\n' +
+        '认领入口在以下情况会自动关闭：admins 已有管理员、或配置了 ADMIN_OPENIDS 环境变量。',
+      '部署者信息'
+    );
+    if (!yes) return;
+
+    try {
+      const res = await api.claimAdmin();
+      getApp().setSession({
+        role: 'admin',
+        openid: res.openid,
+        nickName: (res.admin && res.admin.nickName) || '管理员',
+        avatarUrl: (res.admin && res.admin.avatarUrl) || ''
+      });
+      toast('认领成功，正在进入后台', 'success', 1500);
+      setTimeout(() => wx.redirectTo({ url: '/pages/admin/home/home' }), 1000);
+    } catch (err) {
+      await confirm(
+        `${err.message}\n\n你的 openid 是：\n${openid}\n\n` +
+          '如需新增管理员，请在云开发控制台 → 数据库 → admins 集合中添加记录。',
+        '无法认领'
+      );
     }
   }
 });
