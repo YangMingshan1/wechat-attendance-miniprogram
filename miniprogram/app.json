@@ -21,7 +21,6 @@
     "backgroundColor": "#F7F7F7"
   },
   "style": "v2",
-  "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents",
   "requiredPrivateInfos": [
     "getLocation",
@@ -29,7 +28,7 @@
   ],
   "permission": {
     "scope.userLocation": {
-      "desc": "用于获取您当前的位置，以判断是否在签到点位的允许范围内"
+      "desc": "用于判断是否在签到点位的允许范围内"
     }
   }
 }

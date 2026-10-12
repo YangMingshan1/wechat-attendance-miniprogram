@@ -148,6 +148,8 @@
 
 ## 快速开始（部署步骤）
 
+> 📖 **第一次部署建议看 [docs/deployment-guide.md](docs/deployment-guide.md)** —— 详细版把每一步的判断标准、常见报错与排查方法都写全了。下面是精简版。
+
 ### 前置条件
 
 - 微信开发者工具（稳定版）
@@ -321,6 +323,7 @@ ER 图见 **[docs/er-diagram.md](docs/er-diagram.md)** 与 **[docs/er-diagram.sv
 | 3 | 交互原型（所有界面 + 页面跳转流转逻辑） | 12 屏可交互线框原型 + 流转逻辑文档 | [`prototypes/screens.html`](prototypes/screens.html) · [`prototypes/flow.md`](prototypes/flow.md) |
 | 4 | 项目代码与文档上传 GitHub | 本项目仓库 | — |
 | 附 | — | 关键设计决策与取舍说明 | [`docs/design-decisions.md`](docs/design-decisions.md) |
+| 附 | — | 部署指南（详细版，含排查手册） | [`docs/deployment-guide.md`](docs/deployment-guide.md) |
 | 附 | — | 测试用例与验证结果 | [`docs/test-cases.md`](docs/test-cases.md) |
 
 ### 查看交互原型
