@@ -137,6 +137,7 @@
 │
 ├── scripts/
 │   ├── sync-common.js               同步公共模块到各云函数
+│   ├── check-wxml.js                WXML 静态校验（标签配对 + 数据绑定）
 │   └── test-core.js                 核心算法自测（42 项）
 │
 ├── project.config.json              微信开发者工具项目配置
@@ -334,10 +335,19 @@ npx serve .
 ### 运行核心逻辑自测
 
 ```bash
+# 核心算法与纯逻辑（42 项断言）
 node scripts/test-core.js
+
+# WXML 静态校验（标签配对 + 数据绑定标识符是否都有定义）
+node scripts/check-wxml.js
+
+# 修改公共模块后同步到各云函数
+node scripts/sync-common.js
 ```
 
-覆盖距离计算、坐标校验、Excel 表头识别、唯一键冲突识别、分页归一化、时间格式化，共 42 项断言。
+`test-core.js` 覆盖距离计算、坐标校验、Excel 表头识别、唯一键冲突识别、分页归一化、时间格式化。
+
+`check-wxml.js` 弥补了"开发者工具之外无法编译 WXML"的空白：检查 12 个 WXML 的标签闭合，并核对 `{{ }}` 中引用的每个标识符都能在页面 `data` 或方法中找到定义。
 
 ---
 
