@@ -1,0 +1,35 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/admin/login/login",
+    "pages/admin/home/home",
+    "pages/admin/course/list/list",
+    "pages/admin/course/edit/edit",
+    "pages/admin/student/list/list",
+    "pages/admin/record/list/list",
+    "pages/admin/record/edit/edit",
+    "pages/student/login/login",
+    "pages/student/home/home",
+    "pages/student/signin/signin",
+    "pages/student/signin/result/result"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#07C160",
+    "navigationBarTitleText": "定位签到系统",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F7F7F7"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "requiredPrivateInfos": [
+    "getLocation",
+    "chooseLocation"
+  ],
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于获取您当前的位置，以判断是否在签到点位的允许范围内"
+    }
+  }
+}

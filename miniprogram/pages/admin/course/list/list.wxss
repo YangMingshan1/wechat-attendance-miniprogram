@@ -1,0 +1,69 @@
+.course-item {
+  background: #fff;
+  margin: 22rpx 30rpx 0;
+  border-radius: 20rpx;
+  padding: 28rpx 30rpx;
+  box-shadow: 0 2rpx 14rpx rgba(0, 0, 0, 0.04);
+}
+
+.course-item .ct {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.course-item .cname {
+  font-size: 32rpx;
+  font-weight: 600;
+  flex: 1;
+  margin-right: 16rpx;
+}
+
+.course-item .cmeta {
+  margin-top: 16rpx;
+  font-size: 25rpx;
+  color: #8A8A8A;
+  line-height: 1.9;
+}
+
+.course-item .cmeta .cline {
+  display: flex;
+  align-items: center;
+}
+
+.course-item .cmeta .dot {
+  margin: 0 10rpx;
+  color: #D0D0D0;
+}
+
+.course-item .cmeta .coord {
+  font-size: 23rpx;
+  color: #B5B5B5;
+}
+
+.course-item .cactions {
+  display: flex;
+  gap: 18rpx;
+  margin-top: 22rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx dashed #EFEFEF;
+}
+
+.mini-btn {
+  font-size: 26rpx;
+  padding: 8rpx 28rpx;
+  border-radius: 12rpx;
+  border: 1rpx solid var(--line);
+  background: #fff;
+  color: #444;
+}
+
+.mini-btn.red {
+  color: var(--danger);
+  border-color: #F8D4D4;
+}
+
+/* 多行提示文本：保留换行 */
+.multiline {
+  white-space: pre-line;
+}

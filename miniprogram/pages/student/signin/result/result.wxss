@@ -1,0 +1,72 @@
+.result-page {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.result-panel {
+  margin: 32rpx 30rpx 0;
+  border-radius: 20rpx;
+  padding: 50rpx 36rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+
+.result-panel .ri {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 50%;
+  margin: 0 auto 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 54rpx;
+  color: #fff;
+}
+
+.result-panel .rt {
+  font-size: 36rpx;
+  font-weight: 600;
+  margin-bottom: 14rpx;
+}
+
+.result-panel .rs {
+  font-size: 25rpx;
+  color: #7A7A7A;
+}
+
+.result-panel .detail {
+  margin-top: 28rpx;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 16rpx;
+  padding: 22rpx 26rpx;
+  text-align: left;
+}
+
+.result-panel .detail .drow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 26rpx;
+  line-height: 2;
+  color: #555;
+}
+
+.result-panel .detail .drow .dv {
+  font-weight: 600;
+  color: #333;
+  max-width: 380rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rp-ok {
+  background: #E9F9F0;
+}
+
+.rp-ok .ri {
+  background: var(--wx-green);
+}
+
+.multiline {
+  white-space: pre-line;
+}

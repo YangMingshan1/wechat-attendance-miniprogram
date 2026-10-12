@@ -1,0 +1,47 @@
+<!-- 学生名单 -->
+<view class="student-list">
+
+  <view class="searchbar">
+    <view class="search-box">
+      <text class="si">🔍</text>
+      <input
+        class="sinput"
+        placeholder="搜索学号 / 姓名 / 班级"
+        placeholder-class="ph"
+        value="{{keyword}}"
+        confirm-type="search"
+        bindinput="onKeywordInput"
+        bindconfirm="onSearch"
+      />
+      <text wx:if="{{keyword}}" class="sclear" bindtap="onClearKeyword">✕</text>
+    </view>
+  </view>
+
+  <view class="list-head">
+    <text>共 {{total}} 人</text>
+    <text class="import-link" bindtap="onImport">⇪ Excel 批量导入</text>
+  </view>
+
+  <view class="stu-row" wx:for="{{list}}" wx:key="_id">
+    <view class="av">{{item.name ? item.name[0] : '?'}}</view>
+    <view class="info">
+      <view class="n">{{item.name}}</view>
+      <view class="s">{{item.sno}} · {{item.className}}</view>
+    </view>
+    <view class="del" data-id="{{item._id}}" data-name="{{item.name}}" bindtap="onDelete">删除</view>
+  </view>
+
+  <view class="empty" wx:if="{{!loading && list.length === 0}}">
+    <text class="ei">👥</text>
+    <view class="et" wx:if="{{keyword}}">没有匹配「{{keyword}}」的学生</view>
+    <view class="et multiline" wx:else>还没有学生名单
+点击上方「Excel 批量导入」上传名单</view>
+  </view>
+
+  <view class="list-footer" wx:if="{{list.length > 0}}">
+    <text wx:if="{{loading}}">加载中…</text>
+    <text wx:elif="{{hasMore}}">上拉加载更多 · 已显示 {{list.length}} / {{total}}</text>
+    <text wx:else>没有更多了 · 共 {{total}} 人</text>
+  </view>
+
+</view>

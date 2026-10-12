@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>微信小程序定位签到系统 · 交互原型</title>
+<style>
+  :root{
+    --wx-green:#07C160;
+    --wx-green-dark:#06AD56;
+    --bg:#EEF0F3;
+    --card:#FFFFFF;
+    --text:#1A1A1A;
+    --sub:#888888;
+    --line:#E5E5E5;
+    --danger:#FA5151;
+    --warn:#FA9D3B;
+    --blue:#10AEFF;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.5;
+  }
+
+  /* ============ 页面头部 ============ */
+  .page-head{
+    background:linear-gradient(135deg,#07C160,#04A94E);
+    color:#fff;padding:32px 40px 28px;
+  }
+  .page-head h1{font-size:26px;font-weight:600;letter-spacing:.5px;}
+  .page-head p{margin-top:8px;font-size:14px;opacity:.92;}
+  .page-head .meta{margin-top:14px;font-size:12.5px;opacity:.85;display:flex;gap:22px;flex-wrap:wrap;}
+  .page-head .meta b{font-weight:600;}
+
+  /* ============ 工具条 ============ */
+  .toolbar{
+    position:sticky;top:0;z-index:50;background:#FFF;border-bottom:1px solid var(--line);
+    padding:12px 40px;display:flex;align-items:center;gap:26px;flex-wrap:wrap;
+    box-shadow:0 1px 4px rgba(0,0,0,.04);
+  }
+  .toolbar .group{display:flex;align-items:center;gap:8px;}
+  .toolbar label{font-size:12.5px;color:var(--sub);}
+  .toolbar input[type=range]{width:130px;accent-color:var(--wx-green);}
+  .toolbar input[type=number]{
+    width:74px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;
+  }
+  .toolbar .val{font-size:12.5px;color:var(--wx-green);font-weight:600;min-width:46px;}
+  .toolbar .spacer{flex:1;}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--sub);flex-wrap:wrap;}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+
+  /* ============ 画布 ============ */
+  .canvas{padding:34px 40px 80px;}
+  .flow-title{
+    font-size:15px;font-weight:600;color:#333;margin:0 0 20px;
+    padding-left:12px;border-left:4px solid var(--wx-green);
+  }
+  .flow-title small{font-weight:400;color:var(--sub);margin-left:10px;font-size:12.5px;}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3, 346px);
+    gap:44px 30px;
+    align-items:start;
+    justify-content:start;
+  }
+  @media (max-width:1180px){
+    .grid{grid-template-columns:repeat(2, 346px);}
+  }
+  @media (max-width:820px){
+    .grid{grid-template-columns:346px;}
+  }
+
+  /* ============ 手机外框 ============ */
+  .phone-wrap{width:326px;flex:0 0 auto;}
+  .phone{
+    width:326px;height:660px;background:#fff;border-radius:34px;
+    border:9px solid #1F1F1F;position:relative;overflow:hidden;
+    display:flex;flex-direction:column;
+    box-shadow:0 8px 24px rgba(0,0,0,.14);
+    transition:transform .15s ease;
+  }
+  .phone:hover{transform:translateY(-3px);}
+  /* 刘海 */
+  .notch{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:132px;height:22px;background:#1F1F1F;border-radius:0 0 14px 14px;z-index:20;
+  }
+  /* 状态栏 */
+  .statusbar{
+    height:30px;flex:0 0 30px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;font-size:11.5px;font-weight:600;color:#000;background:#fff;z-index:15;
+    padding-top:4px;
+  }
+  .statusbar .right{display:flex;gap:5px;align-items:center;font-size:10.5px;}
+  /* 导航栏 */
+  .navbar{
+    height:42px;flex:0 0 42px;display:flex;align-items:center;justify-content:center;
+    position:relative;background:#fff;border-bottom:1px solid #F0F0F0;z-index:14;
+  }
+  .navbar .title{font-size:16px;font-weight:600;}
+  .navbar .back{
+    position:absolute;left:12px;font-size:19px;color:#333;line-height:1;
+  }
+  .navbar .capbtn{
+    position:absolute;right:12px;font-size:19px;line-height:1;
+  }
+  /* 内容区 */
+  .screen{
+    flex:1;overflow-y:auto;overflow-x:hidden;background:#F7F7F7;
+    position:relative;scrollbar-width:thin;
+  }
+  .screen::-webkit-scrollbar{width:4px;}
+  .screen::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px;}
+
+  /* 手机下方标注 */
+  .caption{margin-top:14px;}
+  .caption .no{
+    display:inline-block;background:var(--wx-green);color:#fff;font-size:11px;font-weight:700;
+    padding:2px 8px;border-radius:20px;margin-right:8px;vertical-align:1px;
+  }
+  .caption .nm{font-size:14.5px;font-weight:600;}
+  .caption .path{
+    font-family:Consolas,Monaco,monospace;font-size:11.5px;color:#0A8F4D;
+    background:#E8F8EF;display:inline-block;padding:2px 7px;border-radius:5px;margin-top:7px;
+  }
+  .caption .desc{font-size:12.5px;color:#666;margin-top:7px;}
+  .caption .rules{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px;}
+  .tag{
+    font-size:11px;padding:2px 7px;border-radius:4px;background:#EEF1F5;color:#5A6472;
+    border:1px solid #E0E5EB;
+  }
+  .tag.hot{background:#FDECEC;color:#C93A3A;border-color:#F8D4D4;}
+  .tag.ok{background:#E8F8EF;color:#0A8F4D;border-color:#C9EED9;}
+  .tag.warn{background:#FFF4E5;color:#B36B00;border-color:#FBE0BB;}
+
+  /* ============ 通用组件 ============ */
+  .cell-group{background:#fff;margin-top:10px;}
+  .cell{
+    display:flex;align-items:center;padding:13px 15px;border-bottom:1px solid #F2F2F2;
+    font-size:14.5px;background:#fff;
+  }
+  .cell:last-child{border-bottom:none;}
+  .cell .ico{
+    width:26px;height:26px;border-radius:7px;margin-right:11px;flex:0 0 26px;
+    display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;
+  }
+  .cell .label{flex:1;}
+  .cell .value{color:var(--sub);font-size:13.5px;margin-right:6px;max-width:130px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .cell .arrow{color:#C8C8C8;font-size:15px;}
+  .cell .badge{
+    background:var(--danger);color:#fff;font-size:10.5px;padding:1px 6px;border-radius:9px;margin-right:6px;
+  }
+  .section-title{
+    font-size:12.5px;color:#999;padding:16px 15px 6px;
+  }
+  .muted{color:var(--sub);}
+  .center{text-align:center;}
+
+  .btn{
+    display:block;width:100%;padding:12px;border-radius:8px;border:none;
+    font-size:16px;font-weight:500;text-align:center;cursor:pointer;
+    background:var(--wx-green);color:#fff;
+  }
+  .btn.block-plain{background:#fff;color:#333;border:1px solid var(--line);}
+  .btn.disabled{background:#C8E9D5;color:#fff;cursor:not-allowed;}
+  .btn.danger-plain{background:#fff;color:var(--danger);border:1px solid #F8D4D4;}
+  .btn-group{padding:20px 15px;}
+
+  .input-row{
+    display:flex;align-items:center;padding:13px 15px;background:#fff;border-bottom:1px solid #F2F2F2;
+  }
+  .input-row .k{width:82px;flex:0 0 82px;font-size:14.5px;color:#333;}
+  .input-row .v{flex:1;font-size:14.5px;color:#333;}
+  .input-row .v.ph{color:#BDBDBD;}
+  .input-row .unit{font-size:13px;color:#999;margin-left:6px;}
+  .input-row.textarea{align-items:flex-start;}
+  .input-row.textarea .v{line-height:1.6;color:#BDBDBD;}
+
+  /* 顶部大卡片（学生首页 / 登录页） */
+  .hero{
+    background:linear-gradient(160deg,#07C160,#04A94E);color:#fff;
+    padding:34px 22px 46px;text-align:center;position:relative;
+  }
+  .hero .logo{
+    width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,.22);
+    margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:31px;
+    border:1.5px solid rgba(255,255,255,.35);
+  }
+  .hero h2{font-size:20px;font-weight:600;letter-spacing:.5px;}
+  .hero p{font-size:12.5px;opacity:.9;margin-top:7px;}
+  .hero .curve{
+    position:absolute;bottom:-1px;left:0;right:0;height:22px;background:#F7F7F7;
+    border-radius:50% 50% 0 0 / 100% 100% 0 0;
+  }
+
+  /* 身份选择卡 */
+  .role-card{
+    background:#fff;border-radius:14px;margin:14px 15px 0;padding:19px 17px;
+    display:flex;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.05);
+    border:1.5px solid transparent;
+  }
+  .role-card .ri{
+    width:50px;height:50px;border-radius:14px;margin-right:15px;flex:0 0 50px;
+    display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;
+  }
+  .role-card .rt{flex:1;}
+  .role-card .rt h3{font-size:16.5px;font-weight:600;margin-bottom:3px;}
+  .role-card .rt p{font-size:12px;color:#999;line-height:1.45;}
+  .role-card .rarrow{color:#D0D0D0;font-size:17px;}
+
+  /* 统计卡 */
+  .stat-row{display:flex;gap:11px;padding:14px 15px 0;}
+  .stat{
+    flex:1;background:#fff;border-radius:11px;padding:14px 10px;text-align:center;
+    box-shadow:0 1px 6px rgba(0,0,0,.04);
+  }
+  .stat .num{font-size:22px;font-weight:700;color:var(--wx-green);line-height:1.2;}
+  .stat .lb{font-size:11.5px;color:#999;margin-top:4px;}
+
+  /* 列表项：课程 */
+  .course-item{
+    background:#fff;margin:10px 15px 0;border-radius:11px;padding:14px 15px;
+    box-shadow:0 1px 6px rgba(0,0,0,.04);
+  }
+  .course-item .ct{display:flex;align-items:center;justify-content:space-between;}
+  .course-item .ct h4{font-size:15.5px;font-weight:600;}
+  .course-item .cmeta{font-size:12.5px;color:#8A8A8A;margin-top:7px;line-height:1.7;}
+  .course-item .cmeta span{display:inline-flex;align-items:center;gap:3px;}
+  .pill{
+    font-size:11px;padding:2px 8px;border-radius:11px;font-weight:500;
+  }
+  .pill.on{background:#E8F8EF;color:#0A8F4D;}
+  .pill.off{background:#F0F0F0;color:#999;}
+  .pill.blue{background:#E7F5FF;color:#0A84C7;}
+
+  /* 地图占位 */
+  .map-box{
+    height:132px;background:
+      repeating-linear-gradient(0deg,#DDE7DD 0 1px,transparent 1px 22px),
+      repeating-linear-gradient(90deg,#DDE7DD 0 1px,transparent 1px 22px),
+      #EEF3EE;
+    position:relative;border-bottom:1px solid var(--line);
+  }
+  .map-box .pin{
+    position:absolute;left:50%;top:52%;transform:translate(-50%,-100%);
+    font-size:26px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));
+  }
+  .map-box .circle{
+    position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);
+    width:76px;height:76px;border:2px dashed rgba(7,193,96,.75);border-radius:50%;
+    background:rgba(7,193,96,.12);
+  }
+  .map-box .hint{
+    position:absolute;left:10px;bottom:9px;background:rgba(255,255,255,.94);
+    font-size:11.5px;padding:3px 9px;border-radius:6px;color:#555;
+    box-shadow:0 1px 4px rgba(0,0,0,.1);
+  }
+  .map-box .recenter{
+    position:absolute;right:10px;bottom:9px;width:32px;height:32px;background:#fff;
+    border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;
+    box-shadow:0 1px 4px rgba(0,0,0,.13);
+  }
+
+  /* 搜索框 */
+  .searchbar{padding:10px 15px;background:#F7F7F7;}
+  .searchbar .box{
+    background:#fff;border-radius:8px;padding:8px 12px;font-size:13.5px;color:#BDBDBD;
+    display:flex;align-items:center;gap:7px;
+  }
+
+  /* 表格式记录列表 */
+  .rec-head{
+    display:flex;font-size:11.5px;color:#999;padding:9px 15px 7px;background:#F7F7F7;
+    font-weight:500;
+  }
+  .rec-head span:first-child{flex:1;}
+  .rec-head span:nth-child(2){width:74px;text-align:center;}
+  .rec-head span:last-child{width:52px;text-align:right;}
+  .rec-item{
+    background:#fff;margin:0 15px 9px;border-radius:10px;padding:12px 14px;
+    box-shadow:0 1px 5px rgba(0,0,0,.04);
+  }
+  .rec-item .r1{display:flex;align-items:center;justify-content:space-between;}
+  .rec-item .r1 .nm{font-size:14.5px;font-weight:600;}
+  .rec-item .r1 .dist{
+    font-size:11.5px;padding:2px 7px;border-radius:9px;background:#E8F8EF;color:#0A8F4D;
+  }
+  .rec-item .r2{font-size:12px;color:#8A8A8A;margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;}
+  .rec-item .r3{
+    display:flex;gap:9px;margin-top:10px;padding-top:9px;border-top:1px dashed #EFEFEF;
+  }
+  .mini-btn{
+    font-size:12.5px;padding:4px 13px;border-radius:6px;border:1px solid var(--line);
+    background:#fff;color:#444;cursor:pointer;
+  }
+  .mini-btn.red{color:var(--danger);border-color:#F8D4D4;}
+
+  /* 员工/学生行 */
+  .stu-row{
+    display:flex;align-items:center;padding:11px 15px;background:#fff;border-bottom:1px solid #F4F4F4;
+  }
+  .stu-row .av{
+    width:34px;height:34px;border-radius:50%;background:#E8F8EF;color:#0A8F4D;
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;
+    margin-right:11px;flex:0 0 34px;
+  }
+  .stu-row .info{flex:1;min-width:0;}
+  .stu-row .info .n{font-size:14.5px;font-weight:500;}
+  .stu-row .info .s{font-size:12px;color:#999;margin-top:2px;}
+  .stu-row .del{font-size:12.5px;color:var(--danger);padding:3px 9px;}
+
+  /* 底部固定操作条 */
+  .fixed-bottom{
+    position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+    padding:11px 15px 15px;box-shadow:0 -2px 8px rgba(0,0,0,.04);z-index:12;
+  }
+  .toolbar-2{display:flex;gap:11px;}
+  .toolbar-2 .btn{flex:1;}
+
+  /* ============ 签到页专用 ============ */
+  .signin-body{padding:0 0 100px;}
+  .cur-course{
+    background:#fff;margin:14px 15px 0;border-radius:12px;padding:16px;
+    box-shadow:0 1px 8px rgba(0,0,0,.05);
+  }
+  .cur-course .cc-t{font-size:17px;font-weight:600;}
+  .cur-course .cc-s{font-size:12.5px;color:#8A8A8A;margin-top:7px;line-height:1.8;}
+  .cur-course .kv{display:flex;justify-content:space-between;font-size:12.5px;margin-top:9px;
+    padding-top:9px;border-top:1px dashed #EFEFEF;color:#666;}
+  .cur-course .kv b{color:#333;font-weight:600;}
+
+  /* 定位雷达 */
+  .radar{
+    height:158px;background:#fff;margin:11px 15px 0;border-radius:12px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:0 1px 8px rgba(0,0,0,.05);position:relative;overflow:hidden;
+  }
+  .radar .ring{
+    position:absolute;width:86px;height:86px;border-radius:50%;
+    border:2px solid rgba(7,193,96,.32);
+  }
+  .radar .ring.r2{width:130px;height:130px;border-color:rgba(7,193,96,.16);}
+  .radar .dot{
+    width:15px;height:15px;border-radius:50%;background:var(--wx-green);z-index:2;
+    box-shadow:0 0 0 5px rgba(7,193,96,.2);
+  }
+  .radar .txt{font-size:12.5px;color:#8A8A8A;margin-top:12px;z-index:2;}
+  .radar .big{font-size:15.5px;font-weight:600;color:#333;margin-top:4px;z-index:2;}
+
+  /* 结果态面板 */
+  .result-panel{
+    margin:11px 15px 0;border-radius:12px;padding:20px 18px;text-align:center;
+    box-shadow:0 1px 8px rgba(0,0,0,.05);
+  }
+  .result-panel .ri{
+    width:54px;height:54px;border-radius:50%;margin:0 auto 12px;
+    display:flex;align-items:center;justify-content:center;font-size:27px;color:#fff;
+  }
+  .result-panel h3{font-size:16.5px;font-weight:600;margin-bottom:7px;}
+  .result-panel p{font-size:12.5px;color:#7A7A7A;line-height:1.65;}
+  .result-panel .detail{
+    margin-top:13px;background:rgba(255,255,255,.72);border-radius:9px;padding:11px 13px;
+    font-size:12.5px;text-align:left;line-height:1.9;color:#555;
+  }
+  .result-panel .detail div{display:flex;justify-content:space-between;}
+  .result-panel .detail b{font-weight:600;color:#333;}
+  .rp-ok{background:#E9F9F0;}
+  .rp-ok .ri{background:var(--wx-green);}
+  .rp-err{background:#FEF0F0;}
+  .rp-err .ri{background:var(--danger);}
+  .rp-warn{background:#FFF7E8;}
+  .rp-warn .ri{background:var(--warn);}
+  .rp-info{background:#EDF7FE;}
+  .rp-info .ri{background:var(--blue);}
+
+  /* Toast */
+  .toast{
+    position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);
+    background:rgba(0,0,0,.76);color:#fff;font-size:13.5px;padding:14px 20px;
+    border-radius:10px;z-index:40;text-align:center;line-height:1.6;min-width:118px;
+    backdrop-filter:blur(3px);
+  }
+  .toast .spin{
+    width:22px;height:22px;border:2.5px solid rgba(255,255,255,.32);
+    border-top-color:#fff;border-radius:50%;margin:0 auto 9px;
+  }
+  .toast .ticon{font-size:26px;display:block;margin-bottom:7px;}
+
+  /* 授权弹窗 */
+  .modal-mask{
+    position:absolute;inset:0;background:rgba(0,0,0,.42);z-index:30;
+    display:flex;align-items:center;justify-content:center;padding:0 30px;
+  }
+  .modal{
+    background:#fff;border-radius:13px;width:100%;overflow:hidden;text-align:center;
+    animation:pop .18s ease;
+  }
+  @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal .mt{font-size:16px;font-weight:600;padding:22px 20px 9px;}
+  .modal .mb{font-size:13px;color:#777;padding:0 22px 20px;line-height:1.6;}
+  .modal .mact{display:flex;border-top:1px solid var(--line);}
+  .modal .mact div{
+    flex:1;padding:13px;font-size:15.5px;color:#333;
+  }
+  .modal .mact div:first-child{border-right:1px solid var(--line);color:#888;}
+  .modal .mact div.primary{color:var(--wx-green);font-weight:600;}
+
+  /* 空状态 */
+  .empty{padding:52px 30px;text-align:center;color:#B5B5B5;}
+  .empty .ei{font-size:42px;margin-bottom:12px;opacity:.6;}
+  .empty p{font-size:13px;line-height:1.7;}
+
+  /* 流程说明区 */
+  .flow-notes{
+    margin:56px 0 0;background:#fff;border-radius:14px;padding:30px 34px;
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+  }
+  .flow-notes h2{font-size:18px;margin-bottom:6px;}
+  .flow-notes > p.sub{font-size:13px;color:var(--sub);margin-bottom:22px;}
+  .flow-notes h3{font-size:14.5px;margin:24px 0 10px;color:#0A8F4D;}
+  .flow-notes table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .flow-notes th,.flow-notes td{
+    border:1px solid #EAEAEA;padding:8px 10px;text-align:left;vertical-align:top;
+  }
+  .flow-notes th{background:#F7F9F8;font-weight:600;color:#444;}
+  .flow-notes td code{
+    font-family:Consolas,Monaco,monospace;font-size:11.5px;background:#F2F4F6;
+    padding:1px 5px;border-radius:4px;color:#0A6E3D;
+  }
+  .flow-notes ul{margin:8px 0 8px 20px;font-size:13px;line-height:1.9;color:#555;}
+  .flow-notes ul li b{color:#333;}
+
+  /* 打印 */
+  @media print{
+    .toolbar{display:none;}
+    body{background:#fff;}
+    .phone{box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= 页面头部 ================= -->
+<div class="page-head">
+  <h1>微信小程序定位签到系统 · 交互原型</h1>
+  <p>管理员 / 学生共用一套小程序 · 微信云开发 · 定位签到</p>
+  <div class="meta">
+    <span>交付物：<b>交互原型（全部界面 + 页面跳转流转逻辑）</b></span>
+    <span>界面数量：<b>12 屏</b></span>
+    <span>对应任务书：<b>第二节 角色与业务规则</b></span>
+  </div>
+</div>
+
+<!-- ================= 工具条 ================= -->
+<div class="toolbar">
+  <div class="group">
+    <label>缩放</label>
+    <input type="range" id="zoom" min="60" max="130" value="100" step="5">
+    <span class="val" id="zoomVal">100%</span>
+  </div>
+  <div class="group">
+    <label>阈值</label>
+    <input type="number" id="radius" value="50" min="1" max="10000">
+    <label>米（courses.radius）</label>
+  </div>
+  <div class="spacer"></div>
+  <div class="legend">
+    <span><i style="background:#07C160"></i>正常流程</span>
+    <span><i style="background:#FA5151"></i>阻断 / 错误态</span>
+    <span><i style="background:#FA9D3B"></i>预警态</span>
+  </div>
+</div>
+
+<!-- ================= 原型画布 ================= -->
+<div class="canvas">
+
+  <!-- ========== 流程一：入口与身份选择 ========== -->
+  <h2 class="flow-title">流程一 · 入口与身份选择 <small>P01</small></h2>
+  <div class="grid">
+
+    <!-- ---------- P01 首页 · 身份选择 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="title">定位签到系统</span></div>
+        <div class="screen">
+          <div class="hero">
+            <div class="logo">📍</div>
+            <h2>定位签到系统</h2>
+            <p>请选择您的身份进入</p>
+            <div class="curve"></div>
+          </div>
+          <div class="role-card">
+            <div class="ri" style="background:linear-gradient(135deg,#07C160,#04A94E)">👨‍🏫</div>
+            <div class="rt">
+              <h3>管理员登录</h3>
+              <p>课程管理 · 学生名单 · 签到记录</p>
+            </div>
+            <span class="rarrow">›</span>
+          </div>
+          <div class="role-card">
+            <div class="ri" style="background:linear-gradient(135deg,#10AEFF,#0A84C7)">🎓</div>
+            <div class="rt">
+              <h3>学生登录</h3>
+              <p>学号 + 姓名登录 · 微信定位签到</p>
+            </div>
+            <span class="rarrow">›</span>
+          </div>
+          <div style="padding:26px 22px 0;text-align:center;">
+            <p style="font-size:11.5px;color:#B5B5B5;line-height:1.8;">
+              管理员与学生共用本小程序<br>身份一经进入，可在我的页面切换
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P01</span><span class="nm">首页 · 身份选择</span>
+        <div class="path">pages/index/index</div>
+        <div class="desc">小程序的唯一入口，两个身份入口卡片，点击后分别进入 P02 / P09。</div>
+        <div class="rules">
+          <span class="tag ok">角色分流入口</span>
+          <span class="tag">共用一套小程序</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- ========== 流程二：管理员端 ========== -->
+  <h2 class="flow-title" style="margin-top:52px;">流程二 · 管理员端 <small>P02 → P08</small></h2>
+  <div class="grid">
+
+    <!-- ---------- P02 管理员授权登录 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="back">‹</span><span class="title">管理员登录</span></div>
+        <div class="screen">
+          <div class="hero" style="padding:40px 22px 40px;">
+            <div class="logo" style="background:rgba(255,255,255,.9);color:#07C160;">🔐</div>
+            <h2>微信授权登录</h2>
+            <p>使用微信账号授权以进入管理后台</p>
+          </div>
+          <div class="cell-group" style="margin-top:16px;">
+            <div class="cell">
+              <div class="ico" style="background:#07C160">👤</div>
+              <span class="label">获取微信身份标识</span>
+              <span class="value">用于管理员校验</span>
+            </div>
+            <div class="cell">
+              <div class="ico" style="background:#10AEFF">🖼️</div>
+              <span class="label">获取昵称与头像</span>
+              <span class="value">仅用于显示</span>
+            </div>
+          </div>
+          <div class="btn-group">
+            <button class="btn">微信授权登录</button>
+          </div>
+          <div style="padding:2px 20px;">
+            <p style="font-size:11.5px;color:#B5B5B5;text-align:center;line-height:1.75;">
+              仅名单内的管理员可登录<br>若提示"非管理员账号"，请联系系统部署者添加
+            </p>
+          </div>
+          <!-- 授权弹窗 -->
+          <div class="modal-mask">
+            <div class="modal">
+              <div class="mt">定位签到系统</div>
+              <div class="mb">申请获得你的公开信息<br>（昵称、头像）</div>
+              <div class="mact">
+                <div>拒绝</div>
+                <div class="primary">允许</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P02</span><span class="nm">管理员授权登录</span>
+        <div class="path">pages/admin/login/login</div>
+        <div class="desc">点击授权 → 云函数 <code>login(adminLogin)</code> 取调用上下文中的 openid → 命中白名单则进入 P03，否则 Toast 提示"非管理员账号"并停留本页。</div>
+        <div class="rules">
+          <span class="tag ok">openid 白名单校验</span>
+          <span class="tag hot">非白名单 → 拒绝</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P03 管理员工作台 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="title">管理后台</span></div>
+        <div class="screen">
+          <div class="hero" style="padding:20px 20px 34px;text-align:left;">
+            <div style="display:flex;align-items:center;">
+              <div class="logo" style="width:44px;height:44px;border-radius:12px;margin:0 12px 0 0;font-size:21px;background:rgba(255,255,255,.22);">👨‍🏫</div>
+              <div>
+                <h2 style="font-size:16.5px;">张老师</h2>
+                <p style="margin-top:3px;">管理员 · 已授权</p>
+              </div>
+            </div>
+            <div class="curve"></div>
+          </div>
+          <div class="stat-row">
+            <div class="stat"><div class="num">3</div><div class="lb">课程</div></div>
+            <div class="stat"><div class="num">126</div><div class="lb">学生</div></div>
+            <div class="stat"><div class="num">89</div><div class="lb">签到记录</div></div>
+          </div>
+          <div class="cell-group">
+            <div class="cell">
+              <div class="ico" style="background:#07C160">📚</div>
+              <span class="label">课程管理</span>
+              <span class="value">3 门</span><span class="arrow">›</span>
+            </div>
+            <div class="cell">
+              <div class="ico" style="background:#10AEFF">👥</div>
+              <span class="label">学生名单</span>
+              <span class="value">126 人</span><span class="arrow">›</span>
+            </div>
+            <div class="cell">
+              <div class="ico" style="background:#FA9D3B">📋</div>
+              <span class="label">签到记录</span>
+              <span class="value">89 条</span><span class="arrow">›</span>
+            </div>
+            <div class="cell">
+              <div class="ico" style="background:#8A7CF8">📊</div>
+              <span class="label">导出签到 Excel</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+          <div class="cell-group">
+            <div class="cell">
+              <div class="ico" style="background:#B5B5B5">↩️</div>
+              <span class="label">切换身份</span>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P03</span><span class="nm">管理员工作台</span>
+        <div class="path">pages/admin/home/home</div>
+        <div class="desc">管理功能总入口，顶部展示课程数 / 学生数 / 记录数统计。四个功能入口分别进入 P04、P06、P07 及直接触发导出。</div>
+        <div class="rules">
+          <span class="tag">功能聚合入口</span>
+          <span class="tag">实时统计</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P04 课程列表 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="back">‹</span><span class="title">课程管理</span><span class="capbtn" style="color:#07C160;font-size:15px;">＋</span></div>
+        <div class="screen">
+          <div class="course-item">
+            <div class="ct"><h4>软件工程</h4><span class="pill on">启用</span></div>
+            <div class="cmeta">
+              <span>📍 第三教学楼 302</span><br>
+              <span>🎯 阈值 50 米</span> · <span>👨‍🏫 张老师</span>
+            </div>
+            <div style="margin-top:11px;padding-top:10px;border-top:1px dashed #EFEFEF;display:flex;gap:9px;">
+              <span class="mini-btn">编辑</span>
+              <span class="mini-btn">停用</span>
+              <span class="mini-btn red">删除</span>
+            </div>
+          </div>
+          <div class="course-item">
+            <div class="ct"><h4>数据结构</h4><span class="pill on">启用</span></div>
+            <div class="cmeta">
+              <span>📍 实验楼 B201</span><br>
+              <span>🎯 阈值 80 米</span> · <span>👨‍🏫 李老师</span>
+            </div>
+            <div style="margin-top:11px;padding-top:10px;border-top:1px dashed #EFEFEF;display:flex;gap:9px;">
+              <span class="mini-btn">编辑</span>
+              <span class="mini-btn">停用</span>
+              <span class="mini-btn red">删除</span>
+            </div>
+          </div>
+          <div class="course-item" style="opacity:.62;">
+            <div class="ct"><h4>操作系统</h4><span class="pill off">停用</span></div>
+            <div class="cmeta">
+              <span>📍 未设置点位</span><br>
+              <span>🎯 阈值 50 米</span>
+            </div>
+            <div style="margin-top:11px;padding-top:10px;border-top:1px dashed #EFEFEF;display:flex;gap:9px;">
+              <span class="mini-btn">编辑</span>
+              <span class="mini-btn">启用</span>
+              <span class="mini-btn red">删除</span>
+            </div>
+          </div>
+          <div style="padding:16px 15px 0;">
+            <p style="font-size:11.5px;color:#B5B5B5;line-height:1.75;text-align:center;">
+              每门课程仅支持 1 个签到点位<br>停用后学生端不可见
+            </p>
+          </div>
+        </div>
+        <div class="fixed-bottom"><button class="btn">＋ 新增课程</button></div>
+      </div>
+      <div class="caption">
+        <span class="no">P04</span><span class="nm">课程列表</span>
+        <div class="path">pages/admin/course/list/list</div>
+        <div class="desc">卡片式列表展示课程名称、点位、阈值、任课教师。行内提供编辑 / 停用 / 删除操作，底部固定"新增课程"按钮进入 P05。</div>
+        <div class="rules">
+          <span class="tag ok">单点位展示</span>
+          <span class="tag">启用 / 停用</span>
+          <span class="tag hot">删除需二次确认</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P05 课程新增 / 编辑 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="back">‹</span><span class="title">新增课程</span></div>
+        <div class="screen">
+          <div class="map-box">
+            <div class="circle"></div>
+            <div class="pin">📍</div>
+            <div class="hint">点击地图选择签到点位</div>
+            <div class="recenter">◎</div>
+          </div>
+          <div class="section-title">课程信息</div>
+          <div class="input-row"><span class="k">课程名称</span><span class="v">软件工程</span></div>
+          <div class="input-row"><span class="k">任课教师</span><span class="v ph">请输入（选填）</span></div>
+          <div class="section-title">签到点位（仅支持 1 个）</div>
+          <div class="input-row"><span class="k">地点名称</span><span class="v">第三教学楼 302</span></div>
+          <div class="input-row"><span class="k">纬度</span><span class="v muted">30.512345（自动填充）</span></div>
+          <div class="input-row"><span class="k">经度</span><span class="v muted">114.365432（自动填充）</span></div>
+          <div class="section-title">定位距离阈值</div>
+          <div class="input-row">
+            <span class="k">允许范围</span>
+            <span class="v js-radius-num">50</span><span class="unit">米</span>
+          </div>
+          <div style="padding:10px 15px 0;">
+            <p style="font-size:11.5px;color:#B5B5B5;line-height:1.7;">
+              默认为 50 米。学生签到位置与点位距离超过该值将被禁止签到。
+            </p>
+          </div>
+          <div style="padding:18px 15px 24px;">
+            <button class="btn">保存</button>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P05</span><span class="nm">新增 / 编辑课程</span>
+        <div class="path">pages/admin/course/edit/edit</div>
+        <div class="desc">点击地图区域调用 <code>wx.chooseLocation</code> 选取点位，经纬度自动回填且不可手改；阈值可自定义，默认 50 米。保存调用 <code>course(create/update)</code>。</div>
+        <div class="rules">
+          <span class="tag ok">wx.chooseLocation 选点</span>
+          <span class="tag ok">默认 50 米</span>
+          <span class="tag">单点位不可增删</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P06 学生名单 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="back">‹</span><span class="title">学生名单</span><span class="capbtn" style="color:#07C160;font-size:15px;">⇪</span></div>
+        <div class="screen">
+          <div class="searchbar"><div class="box">🔍 搜索学号 / 姓名 / 班级</div></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 15px 9px;font-size:12px;color:#999;">
+            <span>共 126 人</span>
+            <span style="color:#07C160;">⇪ Excel 批量导入</span>
+          </div>
+          <div class="stu-row">
+            <div class="av">李</div>
+            <div class="info"><div class="n">李小明</div><div class="s">20230101001 · 软件工程 2301 班</div></div>
+            <span class="del">删除</span>
+          </div>
+          <div class="stu-row">
+            <div class="av">王</div>
+            <div class="info"><div class="n">王小红</div><div class="s">20230101002 · 软件工程 2301 班</div></div>
+            <span class="del">删除</span>
+          </div>
+          <div class="stu-row">
+            <div class="av">赵</div>
+            <div class="info"><div class="n">赵小刚</div><div class="s">20230101003 · 软件工程 2302 班</div></div>
+            <span class="del">删除</span>
+          </div>
+          <div class="stu-row">
+            <div class="av">陈</div>
+            <div class="info"><div class="n">陈小美</div><div class="s">20230101004 · 软件工程 2302 班</div></div>
+            <span class="del">删除</span>
+          </div>
+          <div class="stu-row">
+            <div class="av">刘</div>
+            <div class="info"><div class="n">刘小强</div><div class="s">20230101005 · 软件工程 2303 班</div></div>
+            <span class="del">删除</span>
+          </div>
+          <div style="padding:14px 15px 0;text-align:center;font-size:12px;color:#B5B5B5;">
+            上拉加载更多 · 已显示 5 / 126
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P06</span><span class="nm">学生名单</span>
+        <div class="path">pages/admin/student/list/list</div>
+        <div class="desc">展示 Excel 导入的学生名单（班级 / 姓名 / 学号），支持关键字搜索与分页。右上角"⇪"触发 <code>wx.chooseMessageFile</code> 选择 Excel 并调用 <code>student(import)</code>，完成后弹出导入结果明细。</div>
+        <div class="rules">
+          <span class="tag ok">Excel 批量导入</span>
+          <span class="tag">班级 / 姓名 / 学号</span>
+          <span class="tag warn">返回逐行失败明细</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P07 签到记录列表 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="back">‹</span><span class="title">签到记录</span></div>
+        <div class="screen">
+          <div style="background:#fff;padding:10px 15px;display:flex;gap:9px;border-bottom:1px solid #F2F2F2;">
+            <span class="pill blue" style="padding:5px 11px;">全部课程 ▾</span>
+            <span class="pill" style="padding:5px 11px;background:#F5F5F5;color:#777;">全部班级 ▾</span>
+          </div>
+          <div class="rec-head"><span>学生</span><span>距离</span><span>操作</span></div>
+          <div class="rec-item">
+            <div class="r1"><span class="nm">李小明</span><span class="dist">13.4 米</span></div>
+            <div class="r2"><span>软件工程</span><span>20230101001</span></div>
+            <div class="r2"><span>🕐 2025-03-01 10:15:30</span></div>
+            <div class="r3"><span class="mini-btn">修改</span><span class="mini-btn red">删除</span></div>
+          </div>
+          <div class="rec-item">
+            <div class="r1"><span class="nm">王小红</span><span class="dist">22.8 米</span></div>
+            <div class="r2"><span>软件工程</span><span>20230101002</span></div>
+            <div class="r2"><span>🕐 2025-03-01 10:16:02</span></div>
+            <div class="r3"><span class="mini-btn">修改</span><span class="mini-btn red">删除</span></div>
+          </div>
+          <div class="rec-item">
+            <div class="r1"><span class="nm">赵小刚</span><span class="dist">41.2 米</span></div>
+            <div class="r2"><span>软件工程</span><span>20230101003</span></div>
+            <div class="r2"><span>🕐 2025-03-01 10:17:45</span></div>
+            <div class="r3"><span class="mini-btn">修改</span><span class="mini-btn red">删除</span></div>
+          </div>
+          <div class="rec-item" style="opacity:.94;">
+            <div class="r1"><span class="nm">陈小美</span><span class="dist">8.1 米</span></div>
+            <div class="r2"><span>数据结构</span><span>20230101004</span></div>
+            <div class="r2"><span>🕐 2025-03-01 14:05:11</span></div>
+            <div class="r3"><span class="mini-btn">修改</span><span class="mini-btn red">删除</span></div>
+          </div>
+          <div style="padding:6px 15px 90px;text-align:center;font-size:12px;color:#B5B5B5;">
+            共 89 条 · 上拉加载更多
+          </div>
+        </div>
+        <div class="fixed-bottom">
+          <div class="toolbar-2">
+            <button class="btn block-plain">筛选</button>
+            <button class="btn">📊 导出 Excel</button>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P07</span><span class="nm">签到记录列表</span>
+        <div class="path">pages/admin/record/list/list</div>
+        <div class="desc">按课程 / 班级筛选，展示姓名、学号、课程、距离与签到时间。行内可修改（P08）与删除。底部"导出 Excel"调用 <code>export</code> 云函数，生成后自动打开文档。</div>
+        <div class="rules">
+          <span class="tag ok">查看全部记录</span>
+          <span class="tag ok">修改 / 删除</span>
+          <span class="tag ok">导出 Excel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P08 修改签到记录 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="back">‹</span><span class="title">修改签到记录</span></div>
+        <div class="screen">
+          <div class="section-title">可修改项</div>
+          <div class="input-row">
+            <span class="k">所属课程</span>
+            <span class="v">软件工程</span><span class="arrow" style="color:#C8C8C8;">›</span>
+          </div>
+          <div class="input-row"><span class="k">学号</span><span class="v">20230101001</span></div>
+          <div class="input-row"><span class="k">姓名</span><span class="v">李小明</span></div>
+          <div class="input-row"><span class="k">班级</span><span class="v">软件工程 2301 班</span></div>
+          <div class="section-title">签到数据（只读）</div>
+          <div class="input-row"><span class="k">签到时间</span><span class="v muted">2025-03-01 10:15:30</span></div>
+          <div class="input-row"><span class="k">距离</span><span class="v muted">13.42 米</span></div>
+          <div class="input-row"><span class="k">经纬度</span><span class="v muted" style="font-size:12.5px;">30.512444, 114.365501</span></div>
+          <div class="input-row"><span class="k">设备 ID</span><span class="v muted" style="font-size:12px;">d9f8a7b6…3a2b</span></div>
+          <div style="padding:10px 15px 0;">
+            <p style="font-size:11.5px;color:#B5B5B5;line-height:1.7;">
+              若修改所属课程，系统将重新校验"同课程同设备仅 1 次"约束。
+            </p>
+          </div>
+          <div style="padding:18px 15px 24px;">
+            <button class="btn">保存修改</button>
+            <button class="btn danger-plain" style="margin-top:11px;">删除该记录</button>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P08</span><span class="nm">修改签到记录</span>
+        <div class="path">pages/admin/record/edit/edit</div>
+        <div class="desc">课程 / 学号 / 姓名 / 班级可改，签到采集数据（时间、距离、经纬度、设备）只读。改课程时云端重新校验唯一约束，冲突则提示"目标课程下该设备已有签到记录"。</div>
+        <div class="rules">
+          <span class="tag ok">可修改</span>
+          <span class="tag ok">可删除</span>
+          <span class="tag warn">改课程触发唯一性复检</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- ========== 流程三：学生端 ========== -->
+  <h2 class="flow-title" style="margin-top:52px;">流程三 · 学生端 <small>P09 → P12</small></h2>
+  <div class="grid">
+
+    <!-- ---------- P09 学生登录 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="back">‹</span><span class="title">学生登录</span></div>
+        <div class="screen">
+          <div class="hero" style="padding:34px 22px 40px;">
+            <div class="logo">🎓</div>
+            <h2>学生登录</h2>
+            <p>请输入学号与姓名（与名单一致）</p>
+            <div class="curve"></div>
+          </div>
+          <div style="margin-top:14px;">
+            <div class="input-row"><span class="k">学号</span><span class="v">20230101001</span></div>
+            <div class="input-row"><span class="k">姓名</span><span class="v">李小明</span></div>
+            <div class="input-row">
+              <span class="k">设备 ID</span>
+              <span class="v muted" style="font-size:12px;">d9f8a7b6-1c2d-4e3f-9a8b…</span>
+            </div>
+          </div>
+          <div style="padding:12px 15px 0;">
+            <p style="font-size:11.5px;color:#B5B5B5;line-height:1.75;">
+              · 无需密码，不绑定微信账号<br>
+              · 设备 ID 由本机首次运行时自动生成并保存，用于签到去重
+            </p>
+          </div>
+          <div class="btn-group" style="padding-top:18px;">
+            <button class="btn">登录</button>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P09</span><span class="nm">学生登录</span>
+        <div class="path">pages/student/login/login</div>
+        <div class="desc">学号 + 姓名与 <code>users</code> 集合全等匹配即可登录。设备 ID 首次进入时生成 UUID 并写入本地持久化缓存，登录时一并上报云端登记。匹配失败提示"学号与姓名不匹配，请核对后重试"。</div>
+        <div class="rules">
+          <span class="tag ok">无密码</span>
+          <span class="tag ok">不绑定 openid</span>
+          <span class="tag hot">名单不匹配 → 拒绝</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P10 学生首页 · 课程选择 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="title">选择课程签到</span></div>
+        <div class="screen">
+          <div class="hero" style="padding:18px 20px 32px;text-align:left;">
+            <div style="font-size:15px;font-weight:600;">李小明 <span style="font-size:12px;font-weight:400;opacity:.85;">20230101001</span></div>
+            <p style="margin-top:4px;">软件工程 2301 班 · 请选择要签到的课程</p>
+            <div class="curve"></div>
+          </div>
+          <div class="course-item">
+            <div class="ct"><h4>软件工程</h4><span class="pill on">可签到</span></div>
+            <div class="cmeta"><span>📍 第三教学楼 302</span><br><span>👨‍🏫 张老师</span></div>
+            <div style="margin-top:12px;">
+              <button class="btn" style="padding:9px;font-size:14.5px;">立即签到</button>
+            </div>
+          </div>
+          <div class="course-item">
+            <div class="ct"><h4>数据结构</h4><span class="pill on">可签到</span></div>
+            <div class="cmeta"><span>📍 实验楼 B201</span><br><span>👨‍🏫 李老师</span></div>
+            <div style="margin-top:12px;">
+              <button class="btn" style="padding:9px;font-size:14.5px;">立即签到</button>
+            </div>
+          </div>
+          <div style="padding:18px 15px 0;text-align:center;">
+            <p style="font-size:11.5px;color:#B5B5B5;line-height:1.75;">
+              仅显示管理员启用的课程<br>一门课程每台设备只能签到 1 次
+            </p>
+          </div>
+          <div style="padding:20px 15px;">
+            <button class="btn block-plain" style="font-size:14.5px;">退出登录</button>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P10</span><span class="nm">学生首页 · 课程选择</span>
+        <div class="path">pages/student/home/home</div>
+        <div class="desc">列出全部<strong>启用</strong>的课程（停用课程不下发），点击"立即签到"进入 P11。已签到过的课程在进入 P11 后由云端返回 <code>ALREADY_SIGNED</code> 拦截。</div>
+        <div class="rules">
+          <span class="tag">仅显示启用课程</span>
+          <span class="tag ok">不展示距离阈值</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P11 签到页 · 定位中 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="back">‹</span><span class="title">签到</span></div>
+        <div class="screen">
+          <div class="signin-body">
+            <div class="cur-course">
+              <div class="cc-t">软件工程</div>
+              <div class="cc-s">📍 第三教学楼 302 · 张老师</div>
+              <div class="kv"><span>签到点位</span><b>30.512345, 114.365432</b></div>
+            </div>
+            <div class="radar">
+              <div class="ring r2"></div>
+              <div class="ring"></div>
+              <div class="dot" style="opacity:.45;"></div>
+              <div class="big">正在获取定位…</div>
+              <div class="txt">请保持微信定位权限开启</div>
+            </div>
+            <div class="result-panel rp-info" style="text-align:left;">
+              <p style="font-size:12.5px;line-height:1.85;color:#5A6B7A;">
+                ① 调用 <code>wx.getLocation</code> 获取当前位置<br>
+                ② 上报经纬度至云函数 <code>signIn</code><br>
+                ③ 云端计算距离并裁决是否允许签到
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P11</span><span class="nm">签到页 · 定位中</span>
+        <div class="path">pages/student/signin/signin</div>
+        <div class="desc">进入页面即调用微信原生定位 API。若用户拒绝定位授权，弹出 <code>wx.openSetting</code> 引导页；若系统定位服务未开启，提示"请开启手机定位服务"。</div>
+        <div class="rules">
+          <span class="tag ok">wx.getLocation</span>
+          <span class="tag warn">拒绝授权 → 引导设置</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P12 签到成功 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="title">签到成功</span></div>
+        <div class="screen">
+          <div class="signin-body">
+            <div class="result-panel rp-ok" style="margin-top:18px;">
+              <div class="ri">✓</div>
+              <h3>签到成功</h3>
+              <p>已在允许范围内完成签到</p>
+              <div class="detail">
+                <div><span>课程</span><b>软件工程</b></div>
+                <div><span>姓名</span><b>李小明</b></div>
+                <div><span>距离点位</span><b>13.42 米</b></div>
+                <div><span>签到时间</span><b>10:15:30</b></div>
+              </div>
+            </div>
+            <div style="padding:16px 15px 0;">
+              <p style="font-size:11.5px;color:#B5B5B5;text-align:center;line-height:1.75;">
+                本次签到已完成，不可重复提交<br>同一课程同一设备仅可签到 1 次
+              </p>
+            </div>
+            <div style="padding:20px 15px;">
+              <button class="btn block-plain">返回课程列表</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P12</span><span class="nm">签到成功</span>
+        <div class="path">pages/student/signin/result</div>
+        <div class="desc">展示课程、姓名、距点位距离与签到时间。返回后该课程标记为"已签到"，再次进入签到页由云端直接拒绝。</div>
+        <div class="rules">
+          <span class="tag ok">展示实际距离</span>
+          <span class="tag hot">不可重复提交</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P13 超出范围 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="back">‹</span><span class="title">签到</span></div>
+        <div class="screen">
+          <div class="signin-body">
+            <div class="result-panel rp-err" style="margin-top:18px;">
+              <div class="ri">✕</div>
+              <h3>不在允许范围内</h3>
+              <p>当前位置距离签到点位过远<br>已禁止签到</p>
+              <div class="detail">
+                <div><span>当前距离</span><b style="color:#FA5151;">312.6 米</b></div>
+                <div><span>允许范围</span><b>50 米</b></div>
+                <div><span>签到点位</span><b>第三教学楼 302</b></div>
+              </div>
+            </div>
+            <div style="padding:16px 15px 0;">
+              <button class="btn">重新定位</button>
+            </div>
+            <div style="padding:12px 15px 0;">
+              <p style="font-size:11.5px;color:#B5B5B5;text-align:center;line-height:1.75;">
+                请靠近签到点位后重试<br>定位可能存在误差，建议在室外或靠窗处
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P13</span><span class="nm">签到页 · 超出范围</span>
+        <div class="path">pages/student/signin/signin</div>
+        <div class="desc">云端返回 <code>OUT_OF_RANGE</code>，展示实际距离与允许范围，提供"重新定位"。<strong>不写入任何签到记录</strong>，可反复尝试直到进入范围。</div>
+        <div class="rules">
+          <span class="tag hot">超阈值禁止签到</span>
+          <span class="tag ok">可重试定位</span>
+          <span class="tag">展示实际距离</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- P14 已签到 ---------- -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span class="right">•••• 5G ▮</span></div>
+        <div class="navbar"><span class="title">签到</span></div>
+        <div class="screen">
+          <div class="signin-body">
+            <div class="result-panel rp-warn" style="margin-top:18px;">
+              <div class="ri">!</div>
+              <h3>您已完成签到</h3>
+              <p>同一课程每台设备仅可签到 1 次</p>
+              <div class="detail">
+                <div><span>课程</span><b>软件工程</b></div>
+                <div><span>签到人</span><b>李小明</b></div>
+                <div><span>签到时间</span><b>2025-03-01 10:15:30</b></div>
+                <div><span>距离点位</span><b>13.42 米</b></div>
+              </div>
+            </div>
+            <div style="padding:16px 15px 0;">
+              <p style="font-size:11.5px;color:#B5B5B5;text-align:center;line-height:1.75;">
+                系统不允许重复签到或重试<br>如需修正，请联系管理员处理
+              </p>
+            </div>
+            <div style="padding:20px 15px;">
+              <button class="btn block-plain">返回课程列表</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <span class="no">P14</span><span class="nm">签到页 · 已签到拦截</span>
+        <div class="path">pages/student/signin/signin</div>
+        <div class="desc">云端返回 <code>ALREADY_SIGNED</code>，展示原签到记录详情。拦截同时由快路径查询与数据库唯一索引两重保障，<strong>并发请求也无法写入第二条记录</strong>。</div>
+        <div class="rules">
+          <span class="tag hot">同设备仅 1 次，无例外</span>
+          <span class="tag ok">展示原签到信息</span>
+          <span class="tag">无重试入口</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- ================= 流程说明 ================= -->
+  <div class="flow-notes">
+    <h2>页面跳转流转逻辑</h2>
+    <p class="sub">本节说明每个界面的进入条件、触发动作与失败分支，与上方原型逐屏对应。</p>
+
+    <h3>一、总体流转图</h3>
+    <pre style="background:#F8FAF9;border:1px solid #E8EDEA;border-radius:10px;padding:18px;font-size:12px;line-height:1.75;overflow-x:auto;font-family:Consolas,Monaco,monospace;color:#2C3E35;">                          ┌─────────────────────┐
+                          │  P01 首页·身份选择   │
+                          └──────┬───────┬──────┘
+                    选择管理员    │       │    选择学生
+                                 ▼       ▼
+              ┌────────────────────┐   ┌────────────────────┐
+              │ P02 管理员授权登录  │   │ P09 学生登录        │
+              └─────────┬──────────┘   └─────────┬──────────┘
+              非白名单  │  白名单       名单不匹配 │  匹配成功
+              ┌─────────┘  └────────┐   ┌─────────┘  └────────┐
+              ▼                     ▼   ▼                     ▼
+        ┌──────────┐        ┌──────────────┐        ┌──────────────────┐
+        │ Toast 拒绝│        │ P03 管理工作台│        │ P10 学生首页      │
+        └──────────┘        └───┬───┬───┬──┘        └────────┬─────────┘
+                                │   │   │                     │ 选择课程
+        ┌───────────────────────┘   │   └──────────┐          ▼
+        ▼                           ▼              ▼   ┌──────────────┐
+  ┌───────────┐             ┌─────────────┐  ┌──────────┐│ P11 签到·定位 │
+  │P04 课程列表│             │P06 学生名单  │  │P07 记录   │└──────┬───────┘
+  └─────┬─────┘             └──────┬──────┘  └────┬─────┘       │
+        │ 新增/编辑                │ Excel 导入    │ 修改         │ 云端裁决
+        ▼                          ▼              ▼             │
+  ┌───────────┐             ┌─────────────┐  ┌──────────┐       │
+  │P05 课程编辑│             │  导入结果弹窗│  │P08 记录编辑│      │
+  └───────────┘             └─────────────┘  └──────────┘       │
+                                                                 │
+              ┌────────────────┬────────────────┬────────────────┘
+              ▼                ▼                ▼
+      ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+      │P12 签到成功   │ │P13 超出范围   │ │P14 已签到     │
+      └──────────────┘ └──────┬───────┘ └──────────────┘
+                               │ 重新定位
+                               └──────► 回到 P11</pre>
+
+    <h3>二、逐屏跳转规则表</h3>
+    <table>
+      <thead>
+        <tr><th style="width:52px;">屏号</th><th style="width:130px;">界面</th><th>触发动作</th><th style="width:150px;">目标</th><th style="width:190px;">失败分支</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>P01</td><td>首页 · 身份选择</td><td>点击「管理员登录」</td><td>P02 管理员授权登录</td><td>—</td></tr>
+        <tr><td>P01</td><td>首页 · 身份选择</td><td>点击「学生登录」</td><td>P09 学生登录</td><td>—</td></tr>
+        <tr><td>P02</td><td>管理员授权登录</td><td>点击「微信授权登录」</td><td>P03 管理工作台</td><td>openid 不在白名单 → Toast「当前微信账号不是管理员」并停留本页</td></tr>
+        <tr><td>P03</td><td>管理工作台</td><td>点击「课程管理」</td><td>P04 课程列表</td><td>—</td></tr>
+        <tr><td>P03</td><td>管理工作台</td><td>点击「学生名单」</td><td>P06 学生名单</td><td>—</td></tr>
+        <tr><td>P03</td><td>管理工作台</td><td>点击「签到记录」</td><td>P07 签到记录列表</td><td>—</td></tr>
+        <tr><td>P03</td><td>管理工作台</td><td>点击「导出签到 Excel」</td><td>停留本页，生成后打开文档</td><td>无数据 → Toast「暂无签到记录可导出」；生成失败 → Toast 错误原因</td></tr>
+        <tr><td>P03</td><td>管理工作台</td><td>点击「切换身份」</td><td>P01 首页</td><td>—</td></tr>
+        <tr><td>P04</td><td>课程列表</td><td>点击「＋新增课程」</td><td>P05 课程编辑（新增模式）</td><td>—</td></tr>
+        <tr><td>P04</td><td>课程列表</td><td>点击行内「编辑」</td><td>P05 课程编辑（回填模式）</td><td>—</td></tr>
+        <tr><td>P04</td><td>课程列表</td><td>点击「停用 / 启用」</td><td>停留本页，刷新状态</td><td>—</td></tr>
+        <tr><td>P04</td><td>课程列表</td><td>点击「删除」</td><td>停留本页，移除该项</td><td>弹窗二次确认；该课程已有签到记录 → 提示「该课程存在 N 条签到记录，删除后记录将失去关联」</td></tr>
+        <tr><td>P05</td><td>课程编辑</td><td>点击地图区域</td><td>调用 <code>wx.chooseLocation</code> 后回填</td><td>用户取消 → 保持原值</td></tr>
+        <tr><td>P05</td><td>课程编辑</td><td>点击「保存」</td><td>返回 P04 并刷新列表</td><td>课程名为空 / 未选点位 / 阈值非法 → Toast 校验提示；同名课程 → 弹窗提示后仍可保存</td></tr>
+        <tr><td>P06</td><td>学生名单</td><td>点击右上「⇪」</td><td>调用 <code>wx.chooseMessageFile</code></td><td>用户取消 → 无变化；文件非 .xlsx/.xls → Toast「请选择 Excel 文件」</td></tr>
+        <tr><td>P06</td><td>学生名单</td><td>文件选定并上传完成</td><td>弹出导入结果（总数 / 成功 / 失败明细）</td><td>表头缺失 → Toast「Excel 缺少班级/姓名/学号列」；全部失败 → 弹窗展示前 10 条原因</td></tr>
+        <tr><td>P06</td><td>学生名单</td><td>点击「删除」</td><td>停留本页，移除该行</td><td>弹窗二次确认</td></tr>
+        <tr><td>P07</td><td>签到记录列表</td><td>点击行内「修改」</td><td>P08 修改签到记录</td><td>—</td></tr>
+        <tr><td>P07</td><td>签到记录列表</td><td>点击行内「删除」</td><td>停留本页，移除该条</td><td>弹窗二次确认</td></tr>
+        <tr><td>P07</td><td>签到记录列表</td><td>点击「导出 Excel」</td><td>停留本页，生成后打开文档</td><td>见 P03 导出失败分支</td></tr>
+        <tr><td>P07</td><td>签到记录列表</td><td>上拉到底 / 切换筛选</td><td>本页加载下一页</td><td>无更多数据 → 提示「没有更多了」</td></tr>
+        <tr><td>P08</td><td>修改签到记录</td><td>点击「保存修改」</td><td>返回 P07 并刷新</td><td>改课程后与既有记录冲突 → Toast「目标课程下该设备已有签到记录」并停留本页</td></tr>
+        <tr><td>P08</td><td>修改签到记录</td><td>点击「删除该记录」</td><td>返回 P07 并刷新</td><td>弹窗二次确认</td></tr>
+        <tr><td>P09</td><td>学生登录</td><td>点击「登录」</td><td>P10 学生首页</td><td>学号或姓名为空 → Toast 校验；名单无此组合 → Toast「学号与姓名不匹配，请核对后重试」；名单为空 → Toast「管理员尚未导入学生名单」</td></tr>
+        <tr><td>P10</td><td>学生首页</td><td>点击课程「立即签到」</td><td>P11 签到页</td><td>无启用课程 → 空状态「暂无进行中的签到课程」</td></tr>
+        <tr><td>P10</td><td>学生首页</td><td>点击「退出登录」</td><td>返回 P01</td><td>弹窗二次确认，清除本地身份缓存（<b>保留</b>设备 ID）</td></tr>
+        <tr><td>P11</td><td>签到页</td><td>进入页面（自动）</td><td>调用 <code>wx.getLocation</code></td><td>用户拒绝授权 → 弹窗引导「去设置」调用 <code>wx.openSetting</code>；定位服务未开 → Toast「请开启手机定位服务」；定位超时 → Toast「定位失败，请重试」</td></tr>
+        <tr><td>P11</td><td>签到页</td><td>定位成功（自动）</td><td>调用云函数 <code>signIn</code> 裁决</td><td>网络异常 → Toast「网络异常，请稍后重试」，<b>不产生签到记录</b></td></tr>
+        <tr><td>P11</td><td>签到页</td><td>云端返回 <code>SUCCESS</code></td><td>P12 签到成功</td><td>—</td></tr>
+        <tr><td>P11</td><td>签到页</td><td>云端返回 <code>OUT_OF_RANGE</code></td><td>P13 超出范围</td><td>—</td></tr>
+        <tr><td>P11</td><td>签到页</td><td>云端返回 <code>ALREADY_SIGNED</code></td><td>P14 已签到拦截</td><td>—</td></tr>
+        <tr><td>P13</td><td>超出范围</td><td>点击「重新定位」</td><td>回到 P11 重新定位</td><td>仍超出 → 继续停留 P13（<b>不限次数</b>，因为未产生记录）</td></tr>
+        <tr><td>P12 / P14</td><td>结果页</td><td>点击「返回课程列表」</td><td>返回 P10 并刷新已签到状态</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h3>三、云端裁决返回码与界面映射</h3>
+    <table>
+      <thead><tr><th style="width:170px;">返回码</th><th style="width:120px;">含义</th><th>对应用面</th><th style="width:210px;">是否写入签到记录</th></tr></thead>
+      <tbody>
+        <tr><td><code>SUCCESS</code></td><td>签到成功</td><td>P12</td><td>✅ 写入</td></tr>
+        <tr><td><code>OUT_OF_RANGE</code></td><td>超出距离阈值</td><td>P13</td><td>❌ 不写入</td></tr>
+        <tr><td><code>ALREADY_SIGNED</code></td><td>该设备已签到过此课程</td><td>P14</td><td>❌ 不写入</td></tr>
+        <tr><td><code>NO_COURSE</code></td><td>课程不存在或已停用</td><td>Toast 后返回 P10</td><td>❌ 不写入</td></tr>
+        <tr><td><code>INVALID_PARAM</code></td><td>经纬度非法</td><td>Toast 提示</td><td>❌ 不写入</td></tr>
+        <tr><td><code>LOCATION_DENIED</code></td><td>未获得定位授权</td><td>引导 <code>wx.openSetting</code></td><td>❌ 不写入</td></tr>
+        <tr><td><code>NOT_STUDENT</code></td><td>学号姓名与名单不匹配</td><td>Toast 后返回 P09</td><td>❌ 不写入</td></tr>
+      </tbody>
+    </table>
+
+    <h3>四、需要特别说明的交互约束</h3>
+    <ul>
+      <li><b>超范围允许反复重试</b>：只有<code>OUT_OF_RANGE</code>返回时学生可以不断重新定位，因为此时尚未产生任何记录，符合任务书"超出阈值禁止签到"而不违背"不可重复签到"。</li>
+      <li><b>已签到不提供任何重试入口</b>：P14 页面只有"返回课程列表"，没有"重新签到"按钮；即便学生通过返回上一步或杀进程重进，云端仍会拦截。</li>
+      <li><b>设备 ID 与登录状态相互独立</b>：退出登录只清除学号姓名缓存，<b>不清除设备 ID</b>，否则学生可以通过"退出再登录"绕过签到次数限制。</li>
+      <li><b>签到按钮防重复点击</b>：P11 在请求发出后立即置为禁用态并加锁，避免用户连点产生并发请求（后端唯一索引为最终保障）。</li>
+      <li><b>列表与表单不出现时间相关字段</b>：界面中没有任何"签到开始/结束时间""迟到""缺勤"的展示位，与任务书边界约束一致。签到时间仅在结果页与记录管理中作为事实展示。</li>
+      <li><b>不存在消息推送相关界面</b>：无订阅消息授权弹窗、无通知设置项。</li>
+    </ul>
+
+    <h3>五、与任务书条目的对应关系</h3>
+    <table>
+      <thead><tr><th style="width:260px;">任务书要求</th><th>原型落点</th></tr></thead>
+      <tbody>
+        <tr><td>首页选择身份入口，管理员学生共用一套小程序</td><td>P01</td></tr>
+        <tr><td>管理员：小程序内微信授权登录</td><td>P02</td></tr>
+        <tr><td>管理员：新增课程，设置单个签到点位与自定义阈值（默认 50 米）</td><td>P05</td></tr>
+        <tr><td>管理员：Excel 批量导入学生名单（班级、姓名、学号）</td><td>P06</td></tr>
+        <tr><td>管理员：查看学生列表</td><td>P06</td></tr>
+        <tr><td>管理员：查看全部签到记录，支持修改、删除</td><td>P07、P08</td></tr>
+        <tr><td>管理员：导出签到记录为 Excel 文件</td><td>P07 / P03 导出入口</td></tr>
+        <tr><td>学生：输入学号 + 姓名，与名单匹配即可登录，无密码，不绑定 openid</td><td>P09</td></tr>
+        <tr><td>学生：登录成功后调用微信原生位置 API</td><td>P11</td></tr>
+        <tr><td>学生：超出阈值禁止签到</td><td>P13</td></tr>
+        <tr><td>学生：同一课程同一设备只能签到 1 次，签到后不可再次提交</td><td>P12、P14</td></tr>
+        <tr><td>边界：不支持多点位 / 无时间段 / 无迟到缺勤 / 无消息推送 / 无操作日志</td><td>所有界面均无对应字段与入口</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /canvas -->
+
+<script>
+  // ---------- 缩放（用 transform 缩放，grid 负责排布） ----------
+  var zoom = document.getElementById('zoom');
+  var zoomVal = document.getElementById('zoomVal');
+  var wrapEls = Array.prototype.slice.call(document.querySelectorAll('.phone-wrap'));
+  var BASE_W = 346; // 手机外框宽度 326 + 左右边框各 9 + 余量
+  var naturalSize = null;
+
+  /** 测量未缩放时的真实尺寸，作为缩放补偿的基准 */
+  function measureNaturalSize() {
+    // 先清零内联尺寸与缩放，保证测到的是自然尺寸
+    wrapEls.forEach(function (el) {
+      el.style.transform = '';
+      el.style.width = '';
+      el.style.height = '';
+    });
+    naturalSize = wrapEls.map(function (el) {
+      var r = el.getBoundingClientRect();
+      return { w: Math.ceil(r.width), h: Math.ceil(r.height) };
+    });
+  }
+
+  zoom.addEventListener('input', function () {
+    applyZoom(zoom.value);
+  });
+
+  function applyZoom(pct) {
+    pct = parseInt(pct, 10);
+    zoomVal.textContent = pct + '%';
+    var scale = pct / 100;
+    wrapEls.forEach(function (el, i) {
+      var nat = (naturalSize && naturalSize[i]) || { w: BASE_W, h: 800 };
+      el.style.transform = 'scale(' + scale + ')';
+      el.style.transformOrigin = 'top left';
+      // grid 按元素原始尺寸排布，缩放后必须补偿占位，否则相邻卡片重叠
+      el.style.width = Math.round(nat.w * scale) + 'px';
+      el.style.height = Math.round(nat.h * scale) + 'px';
+    });
+  }
+
+  // 等字体与布局稳定后再测量，然后应用初始缩放
+  function initZoom() {
+    measureNaturalSize();
+    applyZoom(zoom.value);
+  }
+
+  if (document.readyState === 'complete') {
+    initZoom();
+  } else {
+    window.addEventListener('load', initZoom);
+  }
+  // 字体加载完成后尺寸可能变化，重新测量一次
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(initZoom);
+  }
+
+  // ---------- 阈值联动：同步所有"允许范围"数值 ----------
+  var radiusInput = document.getElementById('radius');
+  radiusInput.addEventListener('input', function () {
+    var v = parseInt(radiusInput.value, 10);
+    if (isNaN(v) || v < 1) { return; }
+    document.querySelectorAll('.js-radius').forEach(function (el) {
+      el.textContent = v + ' 米';
+    });
+    document.querySelectorAll('.js-radius-num').forEach(function (el) {
+      el.textContent = v;
+    });
+  });
+
+  // ---------- 点击手机屏内的可点元素，给出简单反馈（原型示意） ----------
+  document.querySelectorAll('.mini-btn, .role-card, .cell, .btn').forEach(function (el) {
+    el.addEventListener('click', function () {
+      el.style.transition = 'opacity .12s';
+      el.style.opacity = '.55';
+      setTimeout(function () { el.style.opacity = ''; }, 130);
+    });
+  });
+</script>
+</body>
+</html>

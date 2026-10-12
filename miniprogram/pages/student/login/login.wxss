@@ -1,0 +1,39 @@
+.login-page {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.hero {
+  padding-bottom: 96rpx;
+}
+
+.form-group {
+  background: #fff;
+  border-radius: 20rpx;
+  margin: 0 30rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+
+.form-row {
+  border-bottom: 1rpx solid #F2F2F2;
+}
+
+.form-row input {
+  width: 100%;
+  font-size: 29rpx;
+}
+
+.form-row .v.coord {
+  font-size: 23rpx;
+  color: #B5B5B5;
+}
+
+.ph {
+  color: #BDBDBD;
+}
+
+/* 多行提示文本：保留换行 */
+.multiline {
+  white-space: pre-line;
+}

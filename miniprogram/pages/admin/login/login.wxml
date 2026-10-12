@@ -1,0 +1,37 @@
+<!-- 管理员授权登录 -->
+<view class="login-page">
+
+  <view class="hero">
+    <view class="logo">🔐</view>
+    <view class="ht">微信授权登录</view>
+    <view class="hs">使用微信账号授权以进入管理后台</view>
+  </view>
+
+  <view class="cell-group">
+    <view class="cell">
+      <view class="ico" style="background:#07C160">👤</view>
+      <view class="label">获取微信身份标识</view>
+      <view class="value">用于管理员校验</view>
+    </view>
+    <view class="cell">
+      <view class="ico" style="background:#10AEFF">🖼️</view>
+      <view class="label">获取昵称与头像</view>
+      <view class="value">仅用于显示</view>
+    </view>
+  </view>
+
+  <view class="btn-group">
+    <button
+      class="btn {{loading ? 'disabled' : ''}}"
+      disabled="{{loading}}"
+      bindtap="onLogin"
+    >{{loading ? '登录中…' : '微信授权登录'}}</button>
+  </view>
+
+  <view class="tip-text center">
+    仅名单内的管理员可登录。若提示"非管理员账号"，请联系系统部署者把你的微信账号加入白名单。
+  </view>
+
+  <view class="dev-entry" bindtap="onShowOpenid">部署者：查看本机 openid</view>
+
+</view>

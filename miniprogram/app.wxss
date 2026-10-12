@@ -1,0 +1,372 @@
+/**
+ * 全局样式
+ * 设计令牌与 prototypes/screens.html 中的原型保持一致，便于对照验收。
+ */
+
+page {
+  --wx-green: #07C160;
+  --wx-green-dark: #06AD56;
+  --danger: #FA5151;
+  --warn: #FA9D3B;
+  --blue: #10AEFF;
+  --text: #1A1A1A;
+  --sub: #888888;
+  --line: #E5E5E5;
+  --bg: #F7F7F7;
+
+  background-color: var(--bg);
+  color: var(--text);
+  font-size: 28rpx;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+}
+
+view, text, input, button, textarea {
+  box-sizing: border-box;
+}
+
+/* ============ 通用容器 ============ */
+.page-pad {
+  padding: 24rpx;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 22rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.section-title {
+  font-size: 24rpx;
+  color: #999;
+  padding: 26rpx 30rpx 12rpx;
+}
+
+/* ============ 按钮 ============ */
+.btn {
+  width: 100%;
+  padding: 26rpx 0;
+  border-radius: 14rpx;
+  background: var(--wx-green);
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.4;
+  border: none;
+}
+
+.btn::after {
+  border: none;
+}
+
+.btn.plain {
+  background: #fff;
+  color: #333;
+  border: 1rpx solid var(--line);
+}
+
+.btn.danger-plain {
+  background: #fff;
+  color: var(--danger);
+  border: 1rpx solid #F8D4D4;
+}
+
+.btn.disabled,
+.btn[disabled] {
+  background: #C8E9D5 !important;
+  color: #fff !important;
+}
+
+.btn.small {
+  padding: 16rpx 0;
+  font-size: 27rpx;
+}
+
+.btn-group {
+  padding: 34rpx 30rpx;
+}
+
+/* ============ 表单行 ============ */
+.form-row {
+  display: flex;
+  align-items: center;
+  padding: 26rpx 30rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #F2F2F2;
+  min-height: 96rpx;
+}
+
+.form-row:last-child {
+  border-bottom: none;
+}
+
+.form-row .k {
+  width: 170rpx;
+  flex: 0 0 170rpx;
+  font-size: 29rpx;
+  color: #333;
+}
+
+.form-row .v {
+  flex: 1;
+  font-size: 29rpx;
+  color: #333;
+  text-align: right;
+}
+
+.form-row .v.left {
+  text-align: left;
+}
+
+.form-row .v.ph {
+  color: #BDBDBD;
+}
+
+.form-row .unit {
+  font-size: 26rpx;
+  color: #999;
+  margin-left: 10rpx;
+}
+
+.form-row .arrow {
+  color: #C8C8C8;
+  font-size: 30rpx;
+  margin-left: 10rpx;
+}
+
+.form-row.readonly .v {
+  color: #999;
+}
+
+/* ============ 列表单元格 ============ */
+.cell-group {
+  background: #fff;
+  margin-top: 20rpx;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 30rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #F2F2F2;
+}
+
+.cell:last-child {
+  border-bottom: none;
+}
+
+.cell .ico {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 14rpx;
+  margin-right: 22rpx;
+  flex: 0 0 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  color: #fff;
+}
+
+.cell .label {
+  flex: 1;
+  font-size: 30rpx;
+}
+
+.cell .value {
+  font-size: 27rpx;
+  color: var(--sub);
+  margin-right: 10rpx;
+}
+
+.cell .arrow {
+  color: #C8C8C8;
+  font-size: 30rpx;
+}
+
+/* ============ 标签 ============ */
+.pill {
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 22rpx;
+  font-weight: 500;
+}
+
+.pill.on {
+  background: #E8F8EF;
+  color: #0A8F4D;
+}
+
+.pill.off {
+  background: #F0F0F0;
+  color: #999;
+}
+
+.pill.blue {
+  background: #E7F5FF;
+  color: #0A84C7;
+}
+
+.pill.warn {
+  background: #FFF4E5;
+  color: #B36B00;
+}
+
+.pill.danger {
+  background: #FDECEC;
+  color: #C93A3A;
+}
+
+/* ============ 空状态 ============ */
+.empty {
+  padding: 120rpx 60rpx;
+  text-align: center;
+  color: #B5B5B5;
+}
+
+.empty .ei {
+  font-size: 86rpx;
+  display: block;
+  margin-bottom: 24rpx;
+  opacity: 0.6;
+}
+
+.empty .et {
+  font-size: 27rpx;
+  line-height: 1.8;
+}
+
+/* ============ 加载与底部 ============ */
+.list-footer {
+  text-align: center;
+  font-size: 24rpx;
+  color: #B5B5B5;
+  padding: 30rpx 0 50rpx;
+}
+
+.fixed-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-top: 1rpx solid var(--line);
+  padding: 20rpx 30rpx calc(20rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.04);
+  z-index: 20;
+}
+
+.fixed-bottom.dual {
+  display: flex;
+  gap: 20rpx;
+}
+
+.fixed-bottom.dual .btn {
+  flex: 1;
+}
+
+.has-fixed-bottom {
+  padding-bottom: 200rpx;
+}
+
+/* ============ 文字工具类 ============ */
+.muted {
+  color: var(--sub);
+}
+
+.small {
+  font-size: 24rpx;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.center {
+  text-align: center;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tip-text {
+  font-size: 24rpx;
+  color: #B5B5B5;
+  line-height: 1.8;
+  padding: 20rpx 30rpx;
+}
+
+/* ============ 顶部横幅 ============ */
+.hero {
+  background: linear-gradient(160deg, #07C160, #04A94E);
+  color: #fff;
+  padding: 60rpx 44rpx 80rpx;
+  text-align: center;
+}
+
+.hero.left {
+  text-align: left;
+  padding: 40rpx 40rpx 64rpx;
+}
+
+.hero .logo {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 36rpx;
+  background: rgba(255, 255, 255, 0.22);
+  border: 3rpx solid rgba(255, 255, 255, 0.35);
+  margin: 0 auto 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 62rpx;
+}
+
+.hero .ht {
+  font-size: 40rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+}
+
+.hero .hs {
+  font-size: 25rpx;
+  opacity: 0.9;
+  margin-top: 14rpx;
+}
+
+.hero .row {
+  display: flex;
+  align-items: center;
+}
+
+.hero .avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.22);
+  margin-right: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42rpx;
+  overflow: hidden;
+}
+
+.hero .avatar image {
+  width: 100%;
+  height: 100%;
+}
+
+/* 卡片上移，压住横幅 */
+.pull-up {
+  margin-top: -40rpx;
+  position: relative;
+  z-index: 2;
+}

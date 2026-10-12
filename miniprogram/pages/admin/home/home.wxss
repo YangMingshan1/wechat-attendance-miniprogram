@@ -1,0 +1,36 @@
+.admin-home {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.stat-row {
+  display: flex;
+  gap: 20rpx;
+  padding: 0 30rpx;
+}
+
+.stat-row .stat {
+  flex: 1;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx 10rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 14rpx rgba(0, 0, 0, 0.05);
+}
+
+.stat-row .num {
+  font-size: 46rpx;
+  font-weight: 700;
+  color: var(--wx-green);
+  line-height: 1.2;
+}
+
+.stat-row .lb {
+  font-size: 23rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.cell-hover {
+  background: #FAFAFA;
+}

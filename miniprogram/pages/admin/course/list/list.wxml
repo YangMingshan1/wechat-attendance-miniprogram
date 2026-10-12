@@ -1,0 +1,45 @@
+<!-- 课程列表 -->
+<view class="course-list">
+
+  <view class="course-item" wx:for="{{list}}" wx:key="_id">
+    <view class="ct">
+      <view class="cname">{{item.name}}</view>
+      <view class="pill {{item.status === 1 ? 'on' : 'off'}}">{{item.status === 1 ? '启用' : '停用'}}</view>
+    </view>
+
+    <view class="cmeta">
+      <view class="cline">📍 {{item.locationName || '未设置点位'}}</view>
+      <view class="cline">
+        <text>🎯 阈值 {{item.radius}} 米</text>
+        <text class="dot">·</text>
+        <text>{{item.teacher || '未填写教师'}}</text>
+      </view>
+      <view class="cline coord" wx:if="{{item.latitude}}">
+        {{item.latitude}}, {{item.longitude}}
+      </view>
+    </view>
+
+    <view class="cactions">
+      <view class="mini-btn" data-id="{{item._id}}" bindtap="onEdit">编辑</view>
+      <view class="mini-btn" data-id="{{item._id}}" data-status="{{item.status}}" bindtap="onToggle">{{item.status === 1 ? '停用' : '启用'}}</view>
+      <view class="mini-btn red" data-id="{{item._id}}" data-name="{{item.name}}" bindtap="onDelete">删除</view>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{!loading && list.length === 0}}">
+    <text class="ei">📚</text>
+    <view class="et multiline">还没有课程
+点击下方按钮新增第一门课程</view>
+  </view>
+
+  <view class="tip-text center" wx:if="{{list.length > 0}}">
+    每门课程仅支持 1 个签到点位；停用后学生端不可见。
+  </view>
+
+  <view class="has-fixed-bottom"></view>
+
+  <view class="fixed-bottom">
+    <button class="btn" bindtap="onCreate">＋ 新增课程</button>
+  </view>
+
+</view>

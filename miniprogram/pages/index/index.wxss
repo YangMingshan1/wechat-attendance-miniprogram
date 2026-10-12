@@ -1,0 +1,79 @@
+.index-page {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.roles {
+  padding: 30rpx 0 0;
+}
+
+.role-card {
+  background: #fff;
+  border-radius: 24rpx;
+  margin: 0 30rpx 24rpx;
+  padding: 34rpx 30rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.role-card-hover {
+  background: #FAFAFA;
+  transform: scale(0.985);
+}
+
+.role-card .ri {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 26rpx;
+  margin-right: 28rpx;
+  flex: 0 0 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  color: #fff;
+}
+
+.role-card .ri.admin {
+  background: linear-gradient(135deg, #07C160, #04A94E);
+}
+
+.role-card .ri.student {
+  background: linear-gradient(135deg, #10AEFF, #0A84C7);
+}
+
+.role-card .rt {
+  flex: 1;
+}
+
+.role-card .rname {
+  font-size: 33rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.role-card .rdesc {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.role-card .rarrow {
+  color: #D0D0D0;
+  font-size: 36rpx;
+}
+
+.foot-tip {
+  padding: 50rpx 60rpx;
+  text-align: center;
+  font-size: 23rpx;
+  color: #B5B5B5;
+  line-height: 1.9;
+}
+
+.foot-tip .device {
+  display: block;
+  margin-top: 16rpx;
+  color: #C8C8C8;
+  font-size: 22rpx;
+}

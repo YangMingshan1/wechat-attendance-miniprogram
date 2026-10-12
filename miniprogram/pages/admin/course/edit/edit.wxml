@@ -1,0 +1,121 @@
+<!-- 新增 / 编辑课程 -->
+<view class="course-edit has-fixed-bottom">
+
+  <!-- 地图选点 -->
+  <view class="map-box" bindtap="onChooseLocation">
+    <template wx:if="{{form.latitude}}">
+      <view class="map-circle"></view>
+      <view class="map-pin">📍</view>
+    </template>
+    <view class="map-empty" wx:else>
+      <text class="me-icon">🗺️</text>
+      <text class="me-text">点击选择签到点位</text>
+    </view>
+    <view class="map-hint">{{form.latitude ? '点击可重新选点' : '将调用微信地图选点'}}</view>
+    <view class="map-recenter">◎</view>
+  </view>
+
+  <view class="section-title">课程信息</view>
+  <view class="form-group">
+    <view class="form-row">
+      <view class="k">课程名称</view>
+      <input
+        class="v left"
+        placeholder="请输入课程名称"
+        placeholder-class="ph"
+        maxlength="50"
+        value="{{form.name}}"
+        data-field="name"
+        bindinput="onInput"
+      />
+    </view>
+    <view class="form-row">
+      <view class="k">任课教师</view>
+      <input
+        class="v left"
+        placeholder="选填"
+        placeholder-class="ph"
+        maxlength="20"
+        value="{{form.teacher}}"
+        data-field="teacher"
+        bindinput="onInput"
+      />
+    </view>
+  </view>
+
+  <view class="section-title">签到点位（仅支持 1 个）</view>
+  <view class="form-group">
+    <view class="form-row">
+      <view class="k">地点名称</view>
+      <input
+        class="v left"
+        placeholder="选点后自动填充，可修改"
+        placeholder-class="ph"
+        maxlength="50"
+        value="{{form.locationName}}"
+        data-field="locationName"
+        bindinput="onInput"
+      />
+    </view>
+    <view class="form-row readonly">
+      <view class="k">纬度</view>
+      <view class="v">{{form.latitude !== null ? form.latitude : '选点后自动填充'}}</view>
+    </view>
+    <view class="form-row readonly">
+      <view class="k">经度</view>
+      <view class="v">{{form.longitude !== null ? form.longitude : '选点后自动填充'}}</view>
+    </view>
+  </view>
+
+  <view class="section-title">定位距离阈值</view>
+  <view class="form-group">
+    <view class="form-row">
+      <view class="k">允许范围</view>
+      <input
+        class="v"
+        type="number"
+        placeholder="50"
+        placeholder-class="ph"
+        value="{{form.radius}}"
+        data-field="radius"
+        bindinput="onInput"
+      />
+      <view class="unit">米</view>
+    </view>
+  </view>
+  <view class="radius-presets">
+    <view
+      class="preset {{form.radius == item ? 'active' : ''}}"
+      wx:for="{{radiusPresets}}"
+      wx:key="*this"
+      data-value="{{item}}"
+      bindtap="onPickRadius"
+    >{{item}} 米</view>
+  </view>
+
+  <view class="section-title">状态</view>
+  <view class="form-group">
+    <view class="form-row">
+      <view class="k">启用课程</view>
+      <view class="v">
+        <switch checked="{{form.status === 1}}" color="#07C160" bindchange="onStatusChange" />
+      </view>
+    </view>
+  </view>
+
+  <view class="tip-text">
+    说明：默认为 50 米。学生签到位置与点位距离超过该值将被禁止签到。经纬度由地图选点确定，不支持手工输入，避免点位漂移。
+  </view>
+
+  <view wx:if="{{isEdit}}" class="btn-group">
+    <button class="btn danger-plain" bindtap="onDelete">删除该课程</button>
+  </view>
+
+  <view class="has-fixed-bottom"></view>
+  <view class="fixed-bottom">
+    <button class="btn {{saving ? 'disabled' : ''}}" disabled="{{saving}}" bindtap="onSave">
+      {{saving ? '保存中…' : '保存'}}
+    </button>
+  </view>
+
+</view>

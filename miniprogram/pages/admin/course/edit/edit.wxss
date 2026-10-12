@@ -1,0 +1,120 @@
+.course-edit {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* 地图选点区域 */
+.map-box {
+  height: 300rpx;
+  background:
+    repeating-linear-gradient(0deg, #DDE7DD 0, #DDE7DD 1rpx, transparent 1rpx, transparent 44rpx),
+    repeating-linear-gradient(90deg, #DDE7DD 0, #DDE7DD 1rpx, transparent 1rpx, transparent 44rpx),
+    #EEF3EE;
+  position: relative;
+  border-bottom: 1rpx solid var(--line);
+}
+
+.map-pin {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -100%);
+  font-size: 54rpx;
+}
+
+.map-circle {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  width: 160rpx;
+  height: 160rpx;
+  border: 3rpx dashed rgba(7, 193, 96, 0.75);
+  border-radius: 50%;
+  background: rgba(7, 193, 96, 0.12);
+}
+
+.map-empty {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  color: #8FA08F;
+}
+
+.map-empty .me-icon {
+  display: block;
+  font-size: 62rpx;
+  margin-bottom: 12rpx;
+}
+
+.map-empty .me-text {
+  font-size: 27rpx;
+}
+
+.map-hint {
+  position: absolute;
+  left: 20rpx;
+  bottom: 18rpx;
+  background: rgba(255, 255, 255, 0.94);
+  font-size: 23rpx;
+  padding: 6rpx 18rpx;
+  border-radius: 10rpx;
+  color: #555;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.map-recenter {
+  position: absolute;
+  right: 20rpx;
+  bottom: 18rpx;
+  width: 64rpx;
+  height: 64rpx;
+  background: #fff;
+  border-radius: 14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  color: #666;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.13);
+}
+
+/* 表单 */
+.form-group {
+  background: #fff;
+}
+
+.form-row input {
+  width: 100%;
+  font-size: 29rpx;
+}
+
+.ph {
+  color: #BDBDBD;
+}
+
+.radius-presets {
+  display: flex;
+  gap: 16rpx;
+  padding: 20rpx 30rpx 0;
+  flex-wrap: wrap;
+}
+
+.radius-presets .preset {
+  font-size: 25rpx;
+  padding: 10rpx 26rpx;
+  border-radius: 30rpx;
+  background: #fff;
+  border: 1rpx solid var(--line);
+  color: #666;
+}
+
+.radius-presets .preset.active {
+  background: #E8F8EF;
+  border-color: #07C160;
+  color: #0A8F4D;
+  font-weight: 500;
+}

@@ -1,0 +1,44 @@
+<!-- 学生首页 · 课程选择 -->
+<view class="student-home">
+
+  <view class="hero left">
+    <view class="sh-name">
+      {{session.name}}
+      <text class="sh-sno">{{session.sno}}</text>
+    </view>
+    <view class="sh-class">{{session.className || '未填写班级'}} · 请选择要签到的课程</view>
+    <view class="sh-device">本机设备标识：{{deviceIdShort}}</view>
+  </view>
+
+  <view class="course-card" wx:for="{{list}}" wx:key="_id">
+    <view class="cc-head">
+      <view class="cc-name">{{item.name}}</view>
+      <view class="pill {{item.signed ? 'warn' : 'on'}}">{{item.signed ? '已签到' : '可签到'}}</view>
+    </view>
+    <view class="cc-meta">
+      <view class="cline">📍 {{item.locationName || '未设置点位'}}</view>
+      <view class="cline" wx:if="{{item.teacher}}">👨‍🏫 {{item.teacher}}</view>
+    </view>
+    <button
+      class="btn small {{item.signed ? 'plain' : ''}}"
+      data-id="{{item._id}}"
+      data-name="{{item.name}}"
+      bindtap="onSignIn"
+    >{{item.signed ? '查看签到结果' : '立即签到'}}</button>
+  </view>
+
+  <view class="empty" wx:if="{{!loading && list.length === 0}}">
+    <text class="ei">📚</text>
+    <view class="et multiline">暂无可签到的课程
+请等待管理员创建并启用课程</view>
+  </view>
+
+  <view class="tip-text center" wx:if="{{list.length > 0}}">
+    一门课程每台设备只能签到 1 次，签到后不可重复提交。
+  </view>
+
+  <view class="btn-group">
+    <button class="btn plain" bindtap="onLogout">退出登录</button>
+  </view>
+
+</view>

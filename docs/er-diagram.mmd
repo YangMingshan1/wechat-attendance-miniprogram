@@ -1,0 +1,61 @@
+erDiagram
+    COURSES ||--o{ RECORDS : "被签到的课程"
+    USERS   ||--o{ RECORDS : "产生签到"
+    ADMINS  ||--o{ COURSES : "创建并管理"
+    DEVICES ||--o{ RECORDS : "签到所用设备"
+
+    COURSES {
+        string   _id PK "课程主键，云开发自动生成"
+        string   name "课程名称"
+        string   teacher "任课教师"
+        string   locationName "签到地点名称"
+        float    latitude "签到点位纬度 (单点位)"
+        float    longitude "签到点位经度 (单点位)"
+        int      radius "定位距离阈值(米)，默认 50"
+        int      status "1=启用 0=停用"
+        string   creatorOpenid FK "创建者 openid -> ADMINS.openid"
+        datetime createTime "创建时间"
+        datetime updateTime "最后修改时间"
+    }
+
+    USERS {
+        string   _id PK "学生记录主键"
+        string   sno UK "学号，唯一，登录凭证"
+        string   name "姓名，登录凭证"
+        string   className "班级"
+        string   importBatch "导入批次标识"
+        datetime createTime "导入时间"
+    }
+
+    RECORDS {
+        string   _id PK "签到记录主键"
+        string   courseId FK "课程 _id -> COURSES._id"
+        string   sno FK "学号 -> USERS.sno"
+        string   name "冗余:学生姓名"
+        string   className "冗余:班级"
+        string   deviceId "设备ID(本地UUID)"
+        string   deviceFingerprint "辅助审计字段，不参与判定"
+        float    latitude "签到上报纬度"
+        float    longitude "签到上报经度"
+        int      distance "云端计算的距离(米)"
+        datetime signTime "签到时间(仅记录，不参与判定)"
+        string   operator "最后修改人 openid"
+        datetime updateTime "最后修改时间"
+    }
+
+    ADMINS {
+        string   _id PK "管理员主键"
+        string   openid UK "微信 openid，唯一"
+        string   nickName "微信昵称"
+        string   avatarUrl "微信头像"
+        datetime createTime "首次登录时间"
+    }
+
+    DEVICES {
+        string   _id PK "设备记录主键"
+        string   deviceId UK "设备ID，唯一"
+        string   fingerprint "硬件指纹(审计用)"
+        string   platform "系统平台"
+        datetime firstSeen "首次出现时间"
+        datetime lastSeen "最近出现时间"
+    }

@@ -1,0 +1,70 @@
+.student-home {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.hero {
+  padding-bottom: 20rpx;
+}
+
+.sh-name {
+  font-size: 34rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: baseline;
+}
+
+.sh-name .sh-sno {
+  font-size: 24rpx;
+  font-weight: 400;
+  opacity: 0.85;
+  margin-left: 16rpx;
+}
+
+.sh-class {
+  font-size: 25rpx;
+  opacity: 0.9;
+  margin-top: 10rpx;
+}
+
+.sh-device {
+  font-size: 22rpx;
+  opacity: 0.75;
+  margin-top: 14rpx;
+}
+
+.course-card {
+  background: #fff;
+  margin: 22rpx 30rpx 0;
+  border-radius: 20rpx;
+  padding: 28rpx 30rpx;
+  box-shadow: 0 2rpx 14rpx rgba(0, 0, 0, 0.04);
+}
+
+.course-card .cc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.course-card .cc-name {
+  font-size: 33rpx;
+  font-weight: 600;
+  flex: 1;
+  margin-right: 16rpx;
+}
+
+.course-card .cc-meta {
+  margin-top: 14rpx;
+  font-size: 25rpx;
+  color: #8A8A8A;
+  line-height: 1.9;
+}
+
+.course-card button {
+  margin-top: 22rpx;
+}
+
+.multiline {
+  white-space: pre-line;
+}

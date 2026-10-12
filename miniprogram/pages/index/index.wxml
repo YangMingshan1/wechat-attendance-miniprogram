@@ -1,0 +1,35 @@
+<!-- 首页 · 身份选择 -->
+<view class="index-page">
+
+  <view class="hero">
+    <view class="logo">📍</view>
+    <view class="ht">定位签到系统</view>
+    <view class="hs">请选择您的身份进入</view>
+  </view>
+
+  <view class="roles">
+    <view class="role-card" hover-class="role-card-hover" bindtap="goAdmin">
+      <view class="ri admin">👨‍🏫</view>
+      <view class="rt">
+        <view class="rname">管理员登录</view>
+        <view class="rdesc">课程管理 · 学生名单 · 签到记录</view>
+      </view>
+      <view class="rarrow">›</view>
+    </view>
+
+    <view class="role-card" hover-class="role-card-hover" bindtap="goStudent">
+      <view class="ri student">🎓</view>
+      <view class="rt">
+        <view class="rname">学生登录</view>
+        <view class="rdesc">学号 + 姓名登录 · 微信定位签到</view>
+      </view>
+      <view class="rarrow">›</view>
+    </view>
+  </view>
+
+  <view class="foot-tip">
+    <text>管理员与学生共用本小程序，身份可在「我的」中切换</text>
+    <text class="device">本机设备标识：{{deviceIdShort}}</text>
+  </view>
+
+</view>

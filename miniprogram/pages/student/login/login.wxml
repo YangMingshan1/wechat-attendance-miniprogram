@@ -1,0 +1,57 @@
+<!-- 学生登录 -->
+<view class="login-page">
+
+  <view class="hero">
+    <view class="logo">🎓</view>
+    <view class="ht">学生登录</view>
+    <view class="hs">请输入学号与姓名（与导入名单一致）</view>
+  </view>
+
+  <view class="form-group pull-up">
+    <view class="form-row">
+      <view class="k">学号</view>
+      <input
+        class="v left"
+        type="text"
+        placeholder="请输入学号"
+        placeholder-class="ph"
+        maxlength="30"
+        value="{{sno}}"
+        data-field="sno"
+        bindinput="onInput"
+        bindconfirm="onLogin"
+      />
+    </view>
+    <view class="form-row">
+      <view class="k">姓名</view>
+      <input
+        class="v left"
+        type="text"
+        placeholder="请输入姓名"
+        placeholder-class="ph"
+        maxlength="30"
+        value="{{name}}"
+        data-field="name"
+        bindinput="onInput"
+        bindconfirm="onLogin"
+      />
+    </view>
+    <view class="form-row readonly">
+      <view class="k">设备 ID</view>
+      <view class="v coord">{{deviceIdShort}}</view>
+    </view>
+  </view>
+
+  <view class="tip-text multiline">
+    · 无需密码，不绑定微信账号
+· 设备 ID 由本机首次运行时自动生成并保存在本地，用于签到去重
+· 同一课程每台设备只能签到 1 次
+  </view>
+
+  <view class="btn-group">
+    <button class="btn {{loading ? 'disabled' : ''}}" disabled="{{loading}}" bindtap="onLogin">
+      {{loading ? '登录中…' : '登录'}}
+    </button>
+  </view>
+
+</view>

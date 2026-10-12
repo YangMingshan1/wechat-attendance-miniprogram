@@ -1,0 +1,61 @@
+<!-- 签到记录列表 -->
+<view class="record-list has-fixed-bottom">
+
+  <view class="filters">
+    <picker mode="selector" range="{{courseNames}}" value="{{courseIndex}}" bindchange="onCourseChange">
+      <view class="filter-item {{courseId ? 'active' : ''}}">
+        {{courseId ? courseNames[courseIndex] : '全部课程'}} ▾
+      </view>
+    </picker>
+    <picker mode="selector" range="{{classNames}}" value="{{classIndex}}" bindchange="onClassChange">
+      <view class="filter-item {{className ? 'active' : ''}}">
+        {{className ? classNames[classIndex] : '全部班级'}} ▾
+      </view>
+    </picker>
+    <view class="filter-reset" wx:if="{{courseId || className}}" bindtap="onResetFilter">重置</view>
+  </view>
+
+  <view class="rec-head">
+    <text class="c1">学生</text>
+    <text class="c2">距离</text>
+    <text class="c3">操作</text>
+  </view>
+
+  <view class="rec-item" wx:for="{{list}}" wx:key="_id">
+    <view class="r1">
+      <text class="nm">{{item.name}}</text>
+      <text class="dist">{{item.distanceText}}</text>
+    </view>
+    <view class="r2">
+      <text>{{item.courseName}}</text>
+      <text>{{item.sno}}</text>
+    </view>
+    <view class="r2">
+      <text>🕐 {{item.signTimeText}}</text>
+    </view>
+    <view class="r2 sub" wx:if="{{item.className}}">
+      <text>{{item.className}}</text>
+    </view>
+    <view class="r3">
+      <view class="mini-btn" data-id="{{item._id}}" bindtap="onEdit">修改</view>
+      <view class="mini-btn red" data-id="{{item._id}}" data-name="{{item.name}}" bindtap="onDelete">删除</view>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{!loading && list.length === 0}}">
+    <text class="ei">📋</text>
+    <view class="et" wx:if="{{courseId || className}}">当前筛选条件下暂无签到记录</view>
+    <view class="et" wx:else>还没有签到记录</view>
+  </view>
+
+  <view class="list-footer" wx:if="{{list.length > 0}}">
+    <text wx:if="{{loading}}">加载中…</text>
+    <text wx:elif="{{hasMore}}">上拉加载更多 · 已显示 {{list.length}} / {{total}}</text>
+    <text wx:else>没有更多了 · 共 {{total}} 条</text>
+  </view>
+
+  <view class="fixed-bottom dual">
+    <button class="btn plain" bindtap="onExport">📊 导出 Excel</button>
+  </view>
+
+</view>

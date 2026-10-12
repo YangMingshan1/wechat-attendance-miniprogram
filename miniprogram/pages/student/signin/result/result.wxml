@@ -1,0 +1,30 @@
+<!-- 签到成功 -->
+<view class="result-page">
+
+  <view class="result-panel rp-ok">
+    <view class="ri">✓</view>
+    <view class="rt">签到成功</view>
+    <view class="rs">已在允许范围内完成签到</view>
+
+    <view class="detail">
+      <view class="drow"><text>课程</text><text class="dv">{{info.courseName}}</text></view>
+      <view class="drow" wx:if="{{info.locationName}}"><text>签到地点</text><text class="dv">{{info.locationName}}</text></view>
+      <view class="drow"><text>姓名</text><text class="dv">{{info.name}}</text></view>
+      <view class="drow" wx:if="{{info.sno}}"><text>学号</text><text class="dv">{{info.sno}}</text></view>
+      <view class="drow" wx:if="{{info.className}}"><text>班级</text><text class="dv">{{info.className}}</text></view>
+      <view class="drow"><text>距离点位</text><text class="dv">{{distanceText}}</text></view>
+      <view class="drow"><text>允许范围</text><text class="dv">{{info.radius}} 米</text></view>
+      <view class="drow"><text>签到时间</text><text class="dv">{{info.signTime}}</text></view>
+    </view>
+  </view>
+
+  <view class="tip-text center multiline">
+    本次签到已完成，不可重复提交。
+同一课程同一设备仅可签到 1 次。
+  </view>
+
+  <view class="btn-group">
+    <button class="btn plain" bindtap="goBackHome">返回课程列表</button>
+  </view>
+
+</view>

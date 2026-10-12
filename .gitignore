@@ -1,0 +1,26 @@
+# ---- 依赖 ----
+node_modules/
+**/node_modules/
+package-lock.json
+
+# ---- 本地工具与缓存（不属于交付物）----
+.tools/
+.npm-cache/
+.venv/
+*.log
+npm-debug.log*
+
+# ---- 微信开发者工具本地文件 ----
+project.private.config.json
+.DS_Store
+Thumbs.db
+
+# ---- 临时验证产物 ----
+_verify-*.png
+prototypes/_preview-*.png
+*.tmp
+
+# ---- 编辑器 ----
+.vscode/
+.idea/
+*.swp

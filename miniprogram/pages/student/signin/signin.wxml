@@ -1,0 +1,102 @@
+<!-- 签到页（P11 定位中 / P13 超出范围 / P14 已签到 / 定位异常） -->
+<view class="signin-page">
+
+  <!-- 课程信息卡 -->
+  <view class="cur-course">
+    <view class="cc-t">{{course.name || courseName || '课程'}}</view>
+    <view class="cc-s" wx:if="{{course.locationName}}">📍 {{course.locationName}}</view>
+    <view class="cc-s" wx:elif="{{course.teacher}}">👨‍🏫 {{course.teacher}}</view>
+    <view class="kv" wx:if="{{course.latitude}}">
+      <text>签到点位</text>
+      <text class="strong">{{course.latitude}}, {{course.longitude}}</text>
+    </view>
+  </view>
+
+  <!-- ===== 定位中 ===== -->
+  <block wx:if="{{state === 'locating'}}">
+    <view class="radar">
+      <view class="ring r2"></view>
+      <view class="ring"></view>
+      <view class="dot pulsing"></view>
+      <view class="big">{{phaseText}}</view>
+      <view class="txt">请保持微信定位权限开启</view>
+    </view>
+    <view class="steps">
+      <view class="step">① 调用 wx.getLocation 获取当前位置</view>
+      <view class="step">② 上报经纬度至云函数 signIn</view>
+      <view class="step">③ 云端计算距离并裁决是否允许签到</view>
+    </view>
+  </block>
+
+  <!-- ===== 超出范围 ===== -->
+  <block wx:elif="{{state === 'outOfRange'}}">
+    <view class="result-panel rp-err">
+      <view class="ri">✕</view>
+      <view class="rt">不在允许范围内</view>
+      <view class="rs">当前位置距离签到点位过远，已禁止签到</view>
+      <view class="detail">
+        <view class="drow"><text>当前距离</text><text class="dv danger">{{result.distanceText}}</text></view>
+        <view class="drow"><text>允许范围</text><text class="dv">{{result.radius}} 米</text></view>
+        <view class="drow" wx:if="{{result.locationName}}"><text>签到点位</text><text class="dv">{{result.locationName}}</text></view>
+      </view>
+    </view>
+    <view class="btn-group">
+      <button class="btn" bindtap="onRetry">重新定位</button>
+    </view>
+    <view class="tip-text center">
+      请靠近签到点位后重试。定位存在误差，建议在室外或靠窗处；重试次数不限。
+    </view>
+  </block>
+
+  <!-- ===== 已签到 ===== -->
+  <block wx:elif="{{state === 'alreadySigned'}}">
+    <view class="result-panel rp-warn">
+      <view class="ri">!</view>
+      <view class="rt">您已完成签到</view>
+      <view class="rs">同一课程每台设备仅可签到 1 次</view>
+      <view class="detail">
+        <view class="drow"><text>课程</text><text class="dv">{{course.name || courseName}}</text></view>
+        <view class="drow" wx:if="{{result.name}}"><text>签到人</text><text class="dv">{{result.name}}</text></view>
+        <view class="drow" wx:if="{{result.signedAtText}}"><text>签到时间</text><text class="dv">{{result.signedAtText}}</text></view>
+        <view class="drow" wx:if="{{result.distanceText}}"><text>距离点位</text><text class="dv">{{result.distanceText}}</text></view>
+      </view>
+    </view>
+    <view class="tip-text center multiline">
+      系统不允许重复签到或重试。
+如需修正，请联系管理员处理。
+    </view>
+    <view class="btn-group">
+      <button class="btn plain" bindtap="goBackHome">返回课程列表</button>
+    </view>
+  </block>
+
+  <!-- ===== 定位权限 / 系统问题 ===== -->
+  <block wx:elif="{{state === 'locationError'}}">
+    <view class="result-panel rp-info">
+      <view class="ri">📍</view>
+      <view class="rt">{{errorTitle}}</view>
+      <view class="rs">{{errorMsg}}</view>
+    </view>
+    <view class="btn-group">
+      <button wx:if="{{needSetting}}" class="btn" bindtap="onOpenSetting">去设置开启定位</button>
+      <button class="btn {{needSetting ? 'plain' : ''}}" bindtap="onRetry">重新定位</button>
+    </view>
+    <view class="tip-text center">
+      签到必须获取您的当前位置，我们不会将位置信息用于其他用途。
+    </view>
+  </block>
+
+  <!-- ===== 其他错误 ===== -->
+  <block wx:elif="{{state === 'error'}}">
+    <view class="result-panel rp-err">
+      <view class="ri">!</view>
+      <view class="rt">签到失败</view>
+      <view class="rs">{{errorMsg}}</view>
+    </view>
+    <view class="btn-group">
+      <button class="btn" bindtap="onRetry">重试</button>
+      <button class="btn plain" bindtap="goBackHome">返回课程列表</button>
+    </view>
+  </block>
+
+</view>

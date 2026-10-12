@@ -1,0 +1,71 @@
+<!-- 管理员工作台 -->
+<view class="admin-home">
+
+  <view class="hero left">
+    <view class="row">
+      <view class="avatar">
+        <image wx:if="{{session.avatarUrl}}" src="{{session.avatarUrl}}" mode="aspectFill" />
+        <text wx:else>👨‍🏫</text>
+      </view>
+      <view>
+        <view style="font-size:32rpx;font-weight:600;">{{session.nickName || '管理员'}}</view>
+        <view style="font-size:24rpx;opacity:.85;margin-top:6rpx;">管理员 · 已授权</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="stat-row pull-up">
+    <view class="stat">
+      <view class="num">{{stats.courseCount}}</view>
+      <view class="lb">课程</view>
+    </view>
+    <view class="stat">
+      <view class="num">{{stats.userCount}}</view>
+      <view class="lb">学生</view>
+    </view>
+    <view class="stat">
+      <view class="num">{{stats.recordCount}}</view>
+      <view class="lb">签到记录</view>
+    </view>
+  </view>
+
+  <view class="cell-group">
+    <view class="cell" hover-class="cell-hover" bindtap="goCourses">
+      <view class="ico" style="background:#07C160">📚</view>
+      <view class="label">课程管理</view>
+      <view class="value">{{stats.courseCount}} 门</view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="cell" hover-class="cell-hover" bindtap="goStudents">
+      <view class="ico" style="background:#10AEFF">👥</view>
+      <view class="label">学生名单</view>
+      <view class="value">{{stats.userCount}} 人</view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="cell" hover-class="cell-hover" bindtap="goRecords">
+      <view class="ico" style="background:#FA9D3B">📋</view>
+      <view class="label">签到记录</view>
+      <view class="value">{{stats.recordCount}} 条</view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="cell" hover-class="cell-hover" bindtap="onExport">
+      <view class="ico" style="background:#8A7CF8">📊</view>
+      <view class="label">导出签到 Excel</view>
+      <view class="value">全部记录</view>
+      <view class="arrow">›</view>
+    </view>
+  </view>
+
+  <view class="cell-group">
+    <view class="cell" hover-class="cell-hover" bindtap="onSwitchRole">
+      <view class="ico" style="background:#B5B5B5">↩️</view>
+      <view class="label">切换身份</view>
+      <view class="arrow">›</view>
+    </view>
+  </view>
+
+  <view class="tip-text">
+    提示：每门课程仅支持 1 个签到点位；学生端同一课程同一设备仅可签到 1 次。
+  </view>
+
+</view>

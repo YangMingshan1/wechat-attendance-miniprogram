@@ -1,0 +1,22 @@
+.record-edit {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.form-group {
+  background: #fff;
+}
+
+.form-row input {
+  width: 100%;
+  font-size: 29rpx;
+}
+
+.form-row .v.coord {
+  font-size: 24rpx;
+  word-break: break-all;
+}
+
+.ph {
+  color: #BDBDBD;
+}

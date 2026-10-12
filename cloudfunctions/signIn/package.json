@@ -1,0 +1,9 @@
+{
+    "main":  "index.js",
+    "description":  "定位签到系统云函数：signIn",
+    "name":  "cloudfunction-signIn",
+    "version":  "1.0.0",
+    "dependencies":  {
+                         "wx-server-sdk":  "~2.6.3"
+                     }
+}
