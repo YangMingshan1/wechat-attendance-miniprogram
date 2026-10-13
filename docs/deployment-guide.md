@@ -345,7 +345,7 @@ Promise.all([
 - [ ] `users.sno`、`admins.openid`、`devices.deviceId` 唯一索引已建立
 - [ ] 5 个集合权限都是「所有用户不可读写」
 - [ ] 7 个云函数都已部署，`student` / `export` 已装 `xlsx`
-- [ ] `login` 云函数配了 `ADMIN_OPENIDS`
+- [ ] `admins` 集合中有你的管理员记录（openid 正确）
 - [ ] 后台已开通 `wx.getLocation` 与 `wx.chooseLocation`
 - [ ] 已声明用户隐私保护指引（位置信息）
 - [ ] 真机能完成一次签到
