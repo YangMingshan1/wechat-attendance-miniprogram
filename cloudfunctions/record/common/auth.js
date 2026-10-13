@@ -40,13 +40,20 @@ async function requireAdmin() {
     throw new BizError(CODE.NOT_LOGIN, '无法获取微信身份，请重新进入小程序');
   }
 
+  // 统一的"不在名单"提示：带上 openid，便于排查是否填错/漏填
+  const notAdminMsg =
+    '当前微信账号不在管理员名单中。\n你的 openid 是：' +
+    openid +
+    '\n请在云开发控制台 → 数据库 → admins 集合中，添加一条包含该 openid 的记录（字段名必须是 openid）。\n' +
+    '若 admins 集合为空且你是首次部署，也可在小程序「管理员登录」页点击底部「部署者入口」认领管理员。';
+
   // 1) 先查 admins 集合
   const existed = await db.collection(ADMINS).where({ openid }).limit(1).get();
   if (existed.data && existed.data.length > 0) {
     return { openid, admin: existed.data[0], fromEnv: false };
   }
 
-  // 2) 再查环境变量白名单
+  // 2) 再查环境变量白名单（兼容旧配置；控制台添加记录是推荐做法）
   const allowList = envAdminOpenids();
   if (allowList.indexOf(openid) !== -1) {
     const doc = {
@@ -65,7 +72,7 @@ async function requireAdmin() {
     return { openid, admin: doc, fromEnv: true };
   }
 
-  throw new BizError(CODE.NOT_ADMIN, '当前微信账号不是管理员');
+  throw new BizError(CODE.NOT_ADMIN, notAdminMsg);
 }
 
 /**

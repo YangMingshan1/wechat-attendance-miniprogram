@@ -54,11 +54,8 @@ Page({
       }, 700);
     } catch (err) {
       if (err && err.code === 401) {
-        // 非管理员账号：给出可操作的提示
-        await confirm(
-          '当前微信账号不在管理员名单中。\n\n如果你是本系统的部署者，请把下面的 openid 填入云函数环境变量 ADMIN_OPENIDS 后重试；如需查看自己的 openid，可在开发者工具中调用 login 云函数的 whoami 动作。',
-          '无法登录'
-        );
+        // 非管理员账号：错误信息里已带 openid 与处理办法，直接展示
+        await confirm(err.message, '无法登录');
       } else {
         showError(err);
       }
