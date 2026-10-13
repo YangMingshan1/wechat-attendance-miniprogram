@@ -48,9 +48,40 @@ async function requireAdmin() {
     '若 admins 集合为空且你是首次部署，也可在小程序「管理员登录」页点击底部「部署者入口」认领管理员。';
 
   // 1) 先查 admins 集合
-  const existed = await db.collection(ADMINS).where({ openid }).limit(1).get();
-  if (existed.data && existed.data.length > 0) {
-    return { openid, admin: existed.data[0], fromEnv: false };
+  //
+  // 兼容三种常见的手工录入瑕疵，避免"值看着一样却匹配不上"：
+  //   a. 首尾带空格（从文档复制粘贴时常见）
+  //   b. 误把 openid 存成了数字以外的类型 → 用 trim 后的字符串再查一次
+  //   c. 记录里用了 _openid 字段名（云开发自动字段）→ 一并兜底查询
+  const candidates = [openid];
+  const trimmed = String(openid).trim();
+  if (trimmed && trimmed !== openid) candidates.push(trimmed);
+
+  for (let i = 0; i < candidates.length; i += 1) {
+    const existed = await db.collection(ADMINS).where({ openid: candidates[i] }).limit(1).get();
+    if (existed.data && existed.data.length > 0) {
+      return { openid, admin: existed.data[0], fromEnv: false };
+    }
+  }
+
+  // 兜底：允许记录写在 _openid 字段里（例如直接从客户端写入的记录）
+  const byUnderscore = await db.collection(ADMINS).where({ _openid: openid }).limit(1).get();
+  if (byUnderscore.data && byUnderscore.data.length > 0) {
+    return { openid, admin: byUnderscore.data[0], fromEnv: false };
+  }
+
+  // 全部未命中：把实际参与匹配的值与库里已有的 openid 打进日志，
+  // 便于在云开发控制台 → 云函数 → 日志 中一眼看出差异字符
+  try {
+    const all = await db.collection(ADMINS).field({ openid: true }).limit(20).get();
+    console.warn(
+      '[鉴权未命中] 调用者 openid = %s (长度 %d)，admins 集合中已有 = %j',
+      openid,
+      String(openid).length,
+      (all.data || []).map((d) => ({ v: d.openid, len: String(d.openid || '').length }))
+    );
+  } catch (e) {
+    console.warn('[鉴权未命中] 读取 admins 列表失败:', e && e.message);
   }
 
   // 2) 再查环境变量白名单（兼容旧配置；控制台添加记录是推荐做法）
