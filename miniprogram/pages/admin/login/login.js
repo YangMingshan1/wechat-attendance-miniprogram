@@ -121,9 +121,11 @@ Page({
       toast('认领成功，正在进入后台', 'success', 1500);
       setTimeout(() => wx.redirectTo({ url: '/pages/admin/home/home' }), 1000);
     } catch (err) {
+      // 把云函数返回的诊断信息一并展示，便于定位"服务异常"的真实原因
+      const diag = err && err.data && err.data.diagnosisSummary;
+      const detail = diag && diag.length ? '\n\n集合状态：\n· ' + diag.join('\n· ') : '';
       await confirm(
-        `${err.message}\n\n你的 openid 是：\n${openid}\n\n` +
-          '如需新增管理员，请在云开发控制台 → 数据库 → admins 集合中添加记录。',
+        `${err.message}${detail}\n\n你的 openid：\n${openid}`,
         '无法认领'
       );
     }

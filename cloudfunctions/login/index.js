@@ -18,7 +18,7 @@ const {
   envAdminOpenids,
   ADMINS
 } = require('./common/auth');
-const { str } = require('./common/utils');
+const { str, isDuplicateKeyError } = require('./common/utils');
 
 const db = cloud.database();
 
@@ -117,6 +117,27 @@ async function studentLogin(event) {
 }
 
 /**
+ * 逐个探测集合的可读性，用于把"服务异常"定位到具体原因
+ */
+async function diagnoseCollections() {
+  const names = ['admins', 'users', 'courses', 'records', 'devices'];
+  const out = [];
+  for (const name of names) {
+    try {
+      const r = await db.collection(name).count();
+      out.push({ collection: name, readable: true, count: r.total });
+    } catch (err) {
+      out.push({
+        collection: name,
+        readable: false,
+        error: String((err && (err.errMsg || err.message)) || err)
+      });
+    }
+  }
+  return out;
+}
+
+/**
  * 认领管理员（首次部署引导）
  *
  * 目的：解决"第一个管理员怎么产生"的问题，让部署者不用手工往数据库里插记录。
@@ -128,8 +149,11 @@ async function studentLogin(event) {
  *
  * 满足时把当前调用者写入 admins 集合并返回其 openid。
  * 一旦 admins 非空、或配置了 ADMIN_OPENIDS，本动作即自动失效，无法被滥用。
+ *
+ * 错误处理：每一步数据库操作单独捕获，失败时抛出带 data.diagnosis 的业务异常，
+ * 便于前端展示真正的原因，而不是笼统的"服务异常"。
  */
-async function claimAdmin() {
+async function claimAdmin(event) {
   const openid = getOpenid();
   if (!openid) {
     throw new BizError(
@@ -146,27 +170,65 @@ async function claimAdmin() {
     );
   }
 
-  // 安全闸门 2：已存在管理员时禁止认领
-  const count = await db.collection(ADMINS).count();
-  if (count.total > 0) {
+  // 支撑信息：各集合可读性（用于出错时定位）
+  const diagnosis = await diagnoseCollections();
+  const adminsProbe = diagnosis.filter((d) => d.collection === ADMINS)[0];
+  const diagnosisSummary = diagnosis.map((d) => {
+    return d.collection + ': ' + (d.readable ? '可读(' + d.count + '条)' : '不可读 - ' + d.error);
+  });
+
+  // 安全闸门 2：admins 集合必须可读，且为空
+  if (!adminsProbe || !adminsProbe.readable) {
+    throw new BizError(
+      CODE.SYS_ERROR,
+      '无法读取 admins 集合，认领失败。' +
+        (adminsProbe ? '底层错误：' + adminsProbe.error + '。' : '') +
+        '请确认该集合存在。你的 openid 是 ' + openid,
+      { openid, diagnosis, diagnosisSummary }
+    );
+  }
+  if (adminsProbe.count > 0) {
     throw new BizError(
       CODE.NOT_ADMIN,
-      '已存在 ' + count.total + ' 位管理员，认领入口已关闭。如需新增管理员，请直接在 admins 集合中添加记录。'
+      '已存在 ' + adminsProbe.count + ' 位管理员，认领入口已关闭。如需新增管理员，请直接在 admins 集合中添加记录。',
+      { openid, diagnosis, diagnosisSummary }
     );
   }
 
+  // 写入管理员
   const doc = {
     openid,
-    nickName: str(event.nickName) || '管理员',
-    avatarUrl: str(event.avatarUrl),
+    nickName: str(event && event.nickName) || '管理员',
+    avatarUrl: str(event && event.avatarUrl),
     createTime: new Date()
   };
-  const added = await db.collection(ADMINS).add({ data: doc });
+
+  let added;
+  try {
+    added = await db.collection(ADMINS).add({ data: doc });
+  } catch (err) {
+    const raw = String((err && (err.errMsg || err.message)) || err);
+    const dup = isDuplicateKeyError(err);
+    throw new BizError(
+      CODE.SYS_ERROR,
+      (dup
+        ? '写入管理员失败：openid 已存在（唯一索引冲突），请检查 admins 集合是否已有同 openid 的记录。'
+        : '写入管理员失败：' + raw) +
+        ' 你的 openid 是 ' + openid,
+      { openid, diagnosis, diagnosisSummary, rawError: raw, isDuplicate: dup }
+    );
+  }
+
   doc._id = added._id;
 
   return ok(
-    { openid, admin: doc },
-    '已认领管理员身份。请妥善保存下面的 openid，之后新增管理员需在 admins 集合中手动添加。'
+    {
+      openid,
+      admin: doc,
+      diagnosisSummary,
+      tip: '已认领管理员身份。请妥善保存此 openid，之后新增管理员需在 admins 集合中手动添加。'
+    },
+    '认领成功'
   );
 }
 
@@ -182,7 +244,14 @@ exports.main = withHandler(async (event) => {
       // 仅供部署者查看自己的 openid，用于配置环境变量 ADMIN_OPENIDS
       return ok({ openid: getOpenid() });
     case 'claimAdmin':
-      return claimAdmin();
+      return claimAdmin(event);
+    case 'diagnose':
+      // 部署排障：查看各集合是否可读、管理员与用户数量
+      return ok({
+        openid: getOpenid() || '(无身份：说明不是从小程序端调用)',
+        envAdminOpenids: envAdminOpenids(),
+        collections: await diagnoseCollections()
+      });
     default:
       throw new BizError(CODE.PARAM_ERROR, '不支持的操作：' + (action || '(空)'));
   }
